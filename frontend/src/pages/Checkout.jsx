@@ -24,7 +24,7 @@ function Checkout() {
 
     try {
       // ២. បញ្ជូនទិន្នន័យទៅកាន់ Backend Server (Port 5001)
-      const response = await fetch('http://localhost:5001/api/orders', {
+      const response = await fetch('https://v-cart-backend.onrender.com/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

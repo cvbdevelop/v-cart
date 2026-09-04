@@ -30,7 +30,7 @@ const [productForm, setProductForm] = useState({
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // ទាញយក Orders (ត្រូវមានសោ)
-      const ordersRes = await fetch('http://localhost:5001/api/orders', { headers });
+      const ordersRes = await fetch('https://v-cart-backend.onrender.com/api/orders', { headers });
       const ordersData = await ordersRes.json();
       
       if (ordersRes.ok) {
@@ -43,7 +43,7 @@ const [productForm, setProductForm] = useState({
       }
 
       // ទាញយក Products ធម្មតា
-      const productsRes = await fetch('http://localhost:5001/api/products');
+      const productsRes = await fetch('https://v-cart-backend.onrender.com/api/products');
       const productsData = await productsRes.json();
       setProducts(Array.isArray(productsData) ? productsData : []);
 
@@ -74,7 +74,7 @@ const [productForm, setProductForm] = useState({
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('http://localhost:5001/api/upload', {
+      const response = await fetch('https://v-cart-backend.onrender.com/api/upload', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }, // មិនបាច់ដាក់ Content-Type ទេ ព្រោះជា FormData
         body: formData
@@ -102,8 +102,8 @@ const [productForm, setProductForm] = useState({
   const handleSubmitProduct = async (e) => {
     e.preventDefault();
     const url = editingId 
-      ? `http://localhost:5001/api/products/${editingId}` 
-      : 'http://localhost:5001/api/products';
+      ? `https://v-cart-backend.onrender.com/api/products/${editingId}` 
+      : 'https://v-cart-backend.onrender.com/api/products';
     const method = editingId ? 'PUT' : 'POST';
 
     try {
@@ -141,7 +141,7 @@ const [productForm, setProductForm] = useState({
     if (window.confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះចេញពីស្តុកមែនទេ?')) {
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch(`http://localhost:5001/api/products/${id}`, {
+        const response = await fetch(`https://v-cart-backend.onrender.com/api/products/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` } // ភ្ជាប់សោដើម្បីមានសិទ្ធិលុប
         });
@@ -175,7 +175,7 @@ const handleEditClick = (product) => {
   const handleStatusChange = async (orderId, newStatus) => {
   try {
     const token = localStorage.getItem('adminToken');
-    const response = await fetch(`http://localhost:5001/api/orders/${orderId}/status`, {
+    const response = await fetch(`https://v-cart-backend.onrender.com/api/orders/${orderId}/status`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',

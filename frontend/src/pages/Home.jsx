@@ -14,7 +14,7 @@ function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/products');
+        const response = await fetch('https://v-cart-backend.onrender.com/api/products');
         const data = await response.json();
         const formattedData = data.map(item => ({ ...item, id: item._id }));
         setProducts(formattedData);
