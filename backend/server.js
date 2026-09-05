@@ -62,6 +62,7 @@ const productSchema = new mongoose.Schema({
   image: { type: String, required: true },
   category: { type: String, default: 'general' }, // បន្ថែមជួរនេះ
   countInStock: { type: Number, required: true, default: 0 } // <-- បន្ថែមថ្មី
+  description: { type: String }, // <-- បន្ថែមបន្ទាត់នេះចូលទីនេះ
 });
 const Product = mongoose.model('Product', productSchema);
 

@@ -57,10 +57,10 @@ function ProductDetail() {
           <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
           <p className="text-3xl font-black text-blue-600 mb-6">${product.price.toFixed(2)}</p>
           <div className="mb-8">
-            <p className="text-gray-600 text-sm leading-relaxed">
-              ផលិតផលនេះមានគុណភាពខ្ពស់ សាកសមបំផុតសម្រាប់ការប្រើប្រាស់ប្រចាំថ្ងៃ។ យើងធានាជូននូវគុណភាព និងតម្លៃសមរម្យ។
+            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
+              {product.description || 'មិនទាន់មានការពិពណ៌នាលម្អិតសម្រាប់ផលិតផលនេះទេនៅឡើយទេ...'}
             </p>
-            <p className="mt-3 text-sm font-medium text-gray-700">ស្តុកសល់: <span className="text-green-600">{product.countInStock || 0}</span></p>
+            <p className="mt-4 text-sm font-medium text-gray-700">ស្តុកសល់: <span className="text-green-600">{product.countInStock || 0}</span></p>
           </div>
           
           <button 

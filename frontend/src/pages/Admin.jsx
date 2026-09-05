@@ -9,7 +9,7 @@ function Admin() {
   const [loading, setLoading] = useState(true);
   // ១. បន្ថែម countInStock: 0 ទៅក្នុង State ដើម
 const [productForm, setProductForm] = useState({ 
-  name: '', price: '', image: '', category: 'general', countInStock: 0 
+  name: '', price: '', image: '', category: 'general', countInStock: 0, description: '' 
 });
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate(); // ថែមថ្មី
@@ -119,7 +119,8 @@ const [productForm, setProductForm] = useState({
           price: parseFloat(productForm.price),
           image: productForm.image,
           category: productForm.category,
-          countInStock: Number(productForm.countInStock) // បញ្ជូនទិន្នន័យស្តុកទៅ Backend
+          countInStock: Number(productForm.countInStock), // បញ្ជូនទិន្នន័យស្តុកទៅ Backend
+          description: productForm.description
         })
       });
 
@@ -164,7 +165,8 @@ const handleEditClick = (product) => {
     price: product.price, 
     image: product.image, 
     category: product.category || 'general',
-    countInStock: product.countInStock || 0 // <-- បន្ថែមថ្មី
+    countInStock: product.countInStock || 0, // <-- បន្ថែមថ្មី
+    description: product.description || ''
   });
 };
 
@@ -241,6 +243,16 @@ const handleEditClick = (product) => {
                 </select>
             </div>
             <div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ការពិពណ៌នាលម្អិត (Description)</label>
+              <textarea 
+                value={productForm.description} 
+                onChange={(e) => setProductForm({...productForm, description: e.target.value})} 
+                className="w-full border border-gray-300 px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows="3"
+                placeholder="សរសេរការពិពណ៌នាអំពីទំនិញនៅទីនេះ..."
+              />
+            </div>
   <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពទំនិញ</label>
   <input 
     type="file" 
