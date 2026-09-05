@@ -1,4 +1,4 @@
-import { Facebook, Send, Phone, MapPin } from 'lucide-react';
+import { Globe, Send, Phone, MapPin } from 'lucide-react';
 
 function Footer() {
   return (
@@ -23,7 +23,7 @@ function Footer() {
           <h4 className="text-lg font-bold text-gray-800 mb-4">បណ្ដាញសង្គម</h4>
           <div className="flex gap-4">
             <a href="#" className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition">
-              <Facebook size={20} />
+              <Globe size={20} />
             </a>
             <a href="#" className="p-2 bg-blue-50 text-blue-400 rounded-full hover:bg-blue-400 hover:text-white transition">
               <Send size={20} />
