@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 // ១. បន្ថែមការ Import toast នៅខាងលើគេ
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
@@ -104,10 +105,13 @@ function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden transition-all duration-300 group">
-              <div className="overflow-hidden">
-                <img src={product.image} alt={product.name} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="overflow-hidden cursor-pointer">
+                <Link to={`/product/${product.id || product._id}`}>
+                  <img src={product.image} alt={product.name} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
+                </Link>
               </div>
               <div className="p-5">
+                {/* កូដឈ្មោះ និងតម្លៃទុកដដែល */}
                 <span className="text-xs bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full font-medium">
                   {product.category || 'general'}
                 </span>
