@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  font-family: 'Kantumruy Pro', sans-serif;
+  background-color: #f8fafc; /* បន្ថែមពណ៌ផ្ទៃខាងក្រោយឱ្យស្រទន់ */
+}

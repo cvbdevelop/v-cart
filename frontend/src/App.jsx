@@ -1,3 +1,5 @@
+// បន្ថែមការ Import នេះនៅខាងលើគេ
+import { Toaster } from 'react-hot-toast';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -13,6 +15,7 @@ function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
           <Navbar />
+          <Toaster position="top-center" reverseOrder={false} /> {/* បន្ថែមជួរនេះ */}
           <main>
             <Routes>
               <Route path="/" element={<Home />} />

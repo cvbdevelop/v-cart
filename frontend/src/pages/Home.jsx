@@ -1,3 +1,5 @@
+// ១. បន្ថែមការ Import toast នៅខាងលើគេ
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { Search } from 'lucide-react';
@@ -33,6 +35,12 @@ function Home() {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // បន្ថែមមុខងារនេះនៅពីលើ if (loading)
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    toast.success(`បានបន្ថែម ${product.name} ចូលកន្ត្រក!`);
+  };
 
   if (loading) {
     return <div className="text-center py-20 text-xl font-bold text-gray-500">កំពុងទាញយកទិន្នន័យ...</div>;
@@ -107,7 +115,7 @@ function Home() {
                 <p className="text-xl text-blue-600 font-bold mt-2">${product.price.toFixed(2)}</p>
                 
                 <button 
-                  onClick={() => addToCart(product)} 
+                  onClick={() => handleAddToCart(product)} 
                   className="mt-4 w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-medium py-2.5 rounded-lg transition-colors duration-300"
                 >
                   បន្ថែមចូលកន្ត្រក
