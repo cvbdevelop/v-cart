@@ -74,7 +74,7 @@ function ProductDetail() {
           {/* ផ្នែកជ្រើសរើសទំហំ */}
 {product.sizes && product.sizes.length > 0 && (
   <div className="mb-4">
-    ា<label className="block text-sm font-medium text-gray-700 mb-2">ជ្រើសរើសទំហំ:</label>
+    <label className="block text-sm font-medium text-gray-700 mb-2">ជ្រើសរើសទំហំ:</label>
     <div className="flex gap-2">
       {product.sizes.map((size, index) => (
         <button

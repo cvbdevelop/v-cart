@@ -259,7 +259,7 @@ const handleEditClick = (product) => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ទំហំ (Sizes - คั่นด้วยเครื่องหมาย ,)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ទំហំ (Sizes)</label>
                 <input 
                   type="text" 
                   value={productForm.sizes} 
@@ -269,7 +269,7 @@ const handleEditClick = (product) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ពណ៌ (Colors - คั่นด้วยเครื่องหมาย ,)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ពណ៌ (Colors)</label>
                 <input 
                   type="text" 
                   value={productForm.colors} 
