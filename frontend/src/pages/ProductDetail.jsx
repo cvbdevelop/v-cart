@@ -14,9 +14,15 @@ function ProductDetail() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://v-cart-backend.onrender.com/api/products/${id}`);
+        // ១. ទាញយកទំនិញទាំងអស់ពី Server
+        const response = await fetch('https://v-cart-backend.onrender.com/api/products');
         const data = await response.json();
-        setProduct(data);
+        
+        // ២. ស្វែងរកទំនិញដែលមាន ID ដូចគ្នាទៅនឹង URL
+        const foundProduct = data.find((item) => item._id === id || item.id === id);
+        
+        // ៣. បញ្ចូលទិន្នន័យទៅក្នុង State
+        setProduct(foundProduct || null);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching product:', error);
