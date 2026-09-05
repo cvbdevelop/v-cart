@@ -31,8 +31,8 @@ function ProductDetail() {
     toast.success(`បានបន្ថែម ${product.name} ចូលកន្ត្រក!`);
   };
 
-  if (loading) return <div className="text-center py-20">កំពុងទាញយកទិន្នន័យ...</div>;
-  if (!product) return <div className="text-center py-20">រកមិនឃើញទំនិញនេះទេ</div>;
+  if (loading) return <div className="text-center py-20 font-bold text-gray-500">កំពុងទាញយកទិន្នន័យ...</div>;
+  if (!product) return <div className="text-center py-20 font-bold text-red-500">រកមិនឃើញទំនិញនេះទេ</div>;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
