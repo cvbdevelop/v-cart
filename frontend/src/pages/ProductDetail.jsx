@@ -10,6 +10,8 @@ function ProductDetail() {
   const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -20,6 +22,11 @@ function ProductDetail() {
         
         // ២. ស្វែងរកទំនិញដែលមាន ID ដូចគ្នាទៅនឹង URL
         const foundProduct = data.find((item) => item._id === id || item.id === id);
+        if (foundProduct) {
+          setProduct(foundProduct);
+          if (foundProduct.sizes && foundProduct.sizes.length > 0) setSelectedSize(foundProduct.sizes[0]);
+          if (foundProduct.colors && foundProduct.colors.length > 0) setSelectedColor(foundProduct.colors[0]);
+        }
         
         // ៣. បញ្ចូលទិន្នន័យទៅក្នុង State
         setProduct(foundProduct || null);
@@ -33,9 +40,10 @@ function ProductDetail() {
   }, [id]);
 
   const handleAddToCart = () => {
-    addToCart(product);
-    toast.success(`បានបន្ថែម ${product.name} ចូលកន្ត្រក!`);
-  };
+  // បញ្ជូន product រួមទាំងទំហំ និងពណ៌ដែលបានរើស
+  addToCart({ ...product, selectedSize, selectedColor });
+  toast.success(`បានបន្ថែម ${product.name} (ទំហំ: ${selectedSize || 'N/A'}, ពណ៌: ${selectedColor || 'N/A'}) ចូលកន្ត្រក!`);
+};
 
   if (loading) return <div className="text-center py-20 font-bold text-gray-500">កំពុងទាញយកទិន្នន័យ...</div>;
   if (!product) return <div className="text-center py-20 font-bold text-red-500">រកមិនឃើញទំនិញនេះទេ</div>;
@@ -63,6 +71,49 @@ function ProductDetail() {
             <p className="mt-4 text-sm font-medium text-gray-700">ស្តុកសល់: <span className="text-green-600">{product.countInStock || 0}</span></p>
           </div>
           
+          {/* ផ្នែកជ្រើសរើសទំហំ */}
+{product.sizes && product.sizes.length > 0 && (
+  <div className="mb-4">
+    ា<label className="block text-sm font-medium text-gray-700 mb-2">ជ្រើសរើសទំហំ:</label>
+    <div className="flex gap-2">
+      {product.sizes.map((size, index) => (
+        <button
+          key={index}
+          onClick={() => setSelectedSize(size)}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition ${
+            selectedSize === size 
+              ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+              : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'
+          }`}
+        >
+          {size}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* ផ្នែកជ្រើសរើសពណ៌ */}
+{product.colors && product.colors.length > 0 && (
+  <div className="mb-6">
+    <label className="block text-sm font-medium text-gray-700 mb-2">ជ្រើសរើសពណ៌:</label>
+    <div className="flex gap-2">
+      {product.colors.map((color, index) => (
+        <button
+          key={index}
+          onClick={() => setSelectedColor(color)}
+          className={`px-4 py-2 rounded-lg border text-sm font-medium transition ${
+            selectedColor === color 
+              ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+              : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'
+          }`}
+        >
+          {color}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
           <button 
             onClick={handleAddToCart}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 hover:shadow-lg"

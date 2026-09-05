@@ -60,9 +60,11 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String, required: true },
-  category: { type: String, default: 'general' }, // បន្ថែមជួរនេះ
-  countInStock: { type: Number, required: true, default: 0 }, // <-- បន្ថែមថ្មី
-  description: { type: String }, // <-- បន្ថែមបន្ទាត់នេះចូលទីនេះ
+  category: { type: String },
+  countInStock: { type: Number },
+  description: { type: String },
+  sizes: { type: [String] },  // <-- បន្ថែមវាលសម្រាប់ទំហំ (ឧទាហរណ៍: ['S', 'M', 'L', 'XL'])
+  colors: { type: [String] }  // <-- បន្ថែមវាលសម្រាប់ពណ៌ (ឧទាហរណ៍: ['Red', 'Blue', 'Black'])
 });
 const Product = mongoose.model('Product', productSchema);
 

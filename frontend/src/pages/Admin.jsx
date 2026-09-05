@@ -9,7 +9,7 @@ function Admin() {
   const [loading, setLoading] = useState(true);
   // ១. បន្ថែម countInStock: 0 ទៅក្នុង State ដើម
 const [productForm, setProductForm] = useState({ 
-  name: '', price: '', image: '', category: 'general', countInStock: 0, description: '' 
+  name: '', price: '', image: '', category: 'general', countInStock: 0, description: '', sizes: '', colors: '' 
 });
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate(); // ថែមថ្មី
@@ -119,8 +119,10 @@ const [productForm, setProductForm] = useState({
           price: parseFloat(productForm.price),
           image: productForm.image,
           category: productForm.category,
-          countInStock: Number(productForm.countInStock), // បញ្ជូនទិន្នន័យស្តុកទៅ Backend
-          description: productForm.description
+          countInStock: Number(productForm.countInStock),
+          description: productForm.description,
+          sizes: productForm.sizes ? productForm.sizes.split(',').map(s => s.trim()) : [],
+          colors: productForm.colors ? productForm.colors.split(',').map(c => c.trim()) : []
         })
       });
 
@@ -165,8 +167,10 @@ const handleEditClick = (product) => {
     price: product.price, 
     image: product.image, 
     category: product.category || 'general',
-    countInStock: product.countInStock || 0, // <-- បន្ថែមថ្មី
-    description: product.description || ''
+    countInStock: product.countInStock || 0,
+    description: product.description || '',
+    sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : (product.sizes || ''),
+    colors: Array.isArray(product.colors) ? product.colors.join(', ') : (product.colors || '')
   });
 };
 
@@ -253,6 +257,28 @@ const handleEditClick = (product) => {
                 placeholder="សរសេរការពិពណ៌នាអំពីទំនិញនៅទីនេះ..."
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ទំហំ (Sizes - คั่นด้วยเครื่องหมาย ,)</label>
+                <input 
+                  type="text" 
+                  value={productForm.sizes} 
+                  onChange={(e) => setProductForm({...productForm, sizes: e.target.value})} 
+                  className="w-full border border-gray-300 px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ឧ. S, M, L, XL"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ពណ៌ (Colors - คั่นด้วยเครื่องหมาย ,)</label>
+                <input 
+                  type="text" 
+                  value={productForm.colors} 
+                  onChange={(e) => setProductForm({...productForm, colors: e.target.value})} 
+                  className="w-full border border-gray-300 px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ឧ. Red, Blue, Black"
+                />
+            </div>
+          </div>
   <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពទំនិញ</label>
   <input 
     type="file" 
