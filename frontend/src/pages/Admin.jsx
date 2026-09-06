@@ -433,7 +433,7 @@ function Admin() {
                         <option value="Delivered">Delivered (បានប្រគល់)</option>
                       </select>
                     </td>
-
+                    
                     {/* បន្ថែមកូដប៊ូតុងលុបនៅត្រង់នេះ */}
                     <td className="py-3 px-4 text-center">
                       <button 
@@ -445,8 +445,8 @@ function Admin() {
                       </button>
                     </td>
                     {/* បញ្ចប់ការបន្ថែម */}
-                  </tr>    
-                  </tr>
+                  </tr>  
+                  
                 ))
               )}
             </tbody>
