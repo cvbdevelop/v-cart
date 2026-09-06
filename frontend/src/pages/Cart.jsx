@@ -105,14 +105,7 @@ function Cart() {
           >
             បន្តទៅកាន់ការទូទាត់ <ArrowRight size={18} />
           </Link>
-          {/* ប៊ូតុងបន្តទៅកាន់ការទូទាត់ (កូដចាស់មានស្រាប់) */}
-          <Link 
-            to="/checkout" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow-md"
-          >
-            បន្តទៅកាន់ការទូទាត់ <ArrowRight size={18} />
-          </Link>
-
+          
           {/* ប៊ូតុងថ្មី សម្រាប់បន្តការទិញទំនិញ (បន្ថែមថ្មីនៅទីនេះ) */}
           <Link 
             to="/" 
