@@ -9,6 +9,8 @@ import { CartProvider } from './contexts/CartContext';
 import { Toaster } from 'react-hot-toast';
 import ProductDetail from './pages/ProductDetail';
 import Footer from './components/Footer';
+// 1. បន្ថែម Import នៅផ្នែកខាងលើ
+import OrderTracking from './pages/OrderTracking';
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/login" element={<Login />} />           
               <Route path="/product/:id" element={<ProductDetail />} />
+              // 2. បន្ថែម Route ខាងក្នុង <Routes>
+              <Route path="/tracking" element={<OrderTracking />} />
             </Routes>
           </main>
           

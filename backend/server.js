@@ -211,6 +211,17 @@ app.put('/api/orders/:id/status', async (req, res) => {
   }
 });
 
+// API សម្រាប់អតិថិជនឆែកមើលការបញ្ជាទិញតាមលេខទូរស័ព្ទ
+app.get('/api/orders/track/:phone', async (req, res) => {
+  try {
+    const phone = req.params.phone;
+    const orders = await Order.find({ phone: phone }).sort({ createdAt: -1 });
+    res.json({ success: true, orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'មានបញ្ហាក្នុងការស្វែងរកទិន្នន័យ' });
+  }
+});
+
 // ==================== CLOUDINARY ====================
 
 cloudinary.config({

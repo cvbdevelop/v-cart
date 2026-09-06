@@ -9,8 +9,12 @@ function Navbar() {
   // គណនាចំនួនទំនិញសរុបនៅក្នុងកន្ត្រក
   const cartCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
 
-  // ... កូដផ្សេងៗទៀតរបស់ Navbar
+  <Link to="/tracking" className="text-gray-700 hover:text-blue-600 font-medium transition">
+  តាមដានការបញ្ជាទិញ
+  </Link>
 
+  // ... កូដផ្សេងៗទៀតរបស់ Navbar
+  
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
