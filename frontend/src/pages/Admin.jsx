@@ -8,6 +8,8 @@ function Admin() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageFile, setImageFile] = useState(null);
+  const [existingImage, setExistingImage] = useState(''); // បន្ថែមថ្មី
 
   // Form states
   const [name, setName] = useState('');
@@ -117,13 +119,15 @@ function Admin() {
     setDescription(product.description || '');
     setSizes(product.sizes ? product.sizes.join(', ') : '');
     setColors(product.colors ? product.colors.join(', ') : '');
+    setExistingImage(product.image); // បន្ថែមថ្មី៖ ចងចាំរូបភាពចាស់
+    setImageFile(null); // សម្អាត File ថ្មីចេញ
   };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('adminToken');
     try {
-      let imageUrl = 'https://placehold.co/400x400?text=Product';
+      let imageUrl = editingId ? existingImage : 'https://placehold.co/400x400?text=Product';
 
       if (imageFile) {
         const formData = new FormData();
