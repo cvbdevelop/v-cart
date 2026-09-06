@@ -55,16 +55,32 @@ const [productForm, setProductForm] = useState({
   };
 
   useEffect(() => {
-  // ទាញយក Products 
-  fetch('https://v-cart-backend.onrender.com/api/products')
-    .then(res => res.json())
-    .then(data => setProducts(data));
+    const fetchData = async () => {
+      try {
+        // ទាញយកទិន្នន័យទំនិញ និង ប្រវត្តិបញ្ជាទិញ ព្រមគ្នា
+        const [productsRes, ordersRes] = await Promise.all([
+          fetch('https://v-cart-backend.onrender.com/api/products'),
+          fetch('https://v-cart-backend.onrender.com/api/orders')
+        ]);
 
-  // ទាញយក Orders (បន្ថែមថ្មី)
-  fetch('https://v-cart-backend.onrender.com/api/orders')
-    .then(res => res.json())
-    .then(data => setOrders(data))
-    .catch(err => console.error("Error fetching orders:", err));
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          setProducts(productsData);
+        }
+        
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          setOrders(ordersData);
+        }
+      } catch (error) {
+        console.error("មានបញ្ហាក្នុងការទាញយកទិន្នន័យ:", error);
+      } finally {
+        // បិទផ្ទាំង Loading ទោះបីជាទាញយកបានជោគជ័យ ឬបរាជ័យក៏ដោយ
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // មុខងារចាកចេញ (Logout)
