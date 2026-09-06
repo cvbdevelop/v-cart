@@ -9,10 +9,6 @@ function Navbar() {
   // គណនាចំនួនទំនិញសរុបនៅក្នុងកន្ត្រក
   const cartCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
 
-  <Link to="/tracking" className="text-gray-700 hover:text-blue-600 font-medium transition">
-  តាមដានការបញ្ជាទិញ
-  </Link>
-
   // ... កូដផ្សេងៗទៀតរបស់ Navbar
   
   return (
@@ -38,6 +34,9 @@ function Navbar() {
           <Link to="/admin" className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
             <User size={26} />
             <span className="hidden sm:block font-medium">Admin</span>
+          </Link>
+          <Link to="/tracking" className="text-gray-700 hover:text-blue-600 font-medium transition">
+            តាមដានការបញ្ជាទិញ
           </Link>
         </div>
       </div>
