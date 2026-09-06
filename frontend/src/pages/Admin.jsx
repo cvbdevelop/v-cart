@@ -224,28 +224,6 @@ const handleEditClick = (product) => {
     return <div className="text-center py-20 text-xl font-bold text-gray-500">កំពុងទាញយកទិន្នន័យ...</div>;
   }
 
-  const handleStatusChange = async (orderId, newStatus) => {
-  try {
-    const token = localStorage.getItem('adminToken');
-    const response = await fetch(`https://v-cart-backend.onrender.com/api/orders/${orderId}/status`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` 
-      },
-      body: JSON.stringify({ status: newStatus })
-    });
-    
-    if (response.ok) {
-      fetchData(); // ទាញយកទិន្នន័យថ្មីមកបង្ហាញ
-    } else {
-      alert('បរាជ័យក្នុងការប្តូរស្ថានភាព');
-    }
-  } catch (error) {
-    console.error('Error updating status:', error);
-  }
-};
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <h2 className="text-2xl font-bold mb-8 text-gray-800 border-l-4 border-blue-500 pl-3">
