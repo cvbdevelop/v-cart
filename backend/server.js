@@ -32,6 +32,15 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ==================== SCHEMAS ====================
 
+// ១. បន្ថែម Schema សម្រាប់ការវាយតម្លៃ (Review)
+const reviewSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  rating: { type: Number, required: true },
+  comment: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// ២. កែសម្រួល Product Schema ដោយបន្ថែម reviews, rating, និង numReviews
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
@@ -40,7 +49,10 @@ const productSchema = new mongoose.Schema({
   countInStock: { type: Number },
   description: { type: String },
   sizes: { type: [String] },  
-  colors: { type: [String] }  
+  colors: { type: [String] },
+  reviews: [reviewSchema], // ផ្ទុកមតិយោបល់
+  rating: { type: Number, default: 0 }, // ពិន្ទុផ្កាយសរុប (មធ្យមភាគ)
+  numReviews: { type: Number, default: 0 } // ចំនួនអ្នកវាយតម្លៃសរុប
 });
 const Product = mongoose.model('Product', productSchema);
 
@@ -179,6 +191,34 @@ app.delete('/api/products/:id', protect, async (req, res) => {
     res.json({ success: true, message: 'លុបទំនិញជោគជ័យ' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'បរាជ័យក្នុងការលុបទំនិញ' });
+  }
+});
+
+// ៣. API សម្រាប់បញ្ជូនមតិយោបល់ និងពិន្ទុផ្កាយ
+app.post('/api/products/:id/reviews', async (req, res) => {
+  try {
+    const { name, rating, comment } = req.body;
+    const product = await Product.findById(req.params.id);
+    
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'រកមិនឃើញទំនិញនេះទេ' });
+    }
+
+    const review = {
+      name,
+      rating: Number(rating),
+      comment
+    };
+
+    product.reviews.push(review);
+    product.numReviews = product.reviews.length;
+    // គណនាពិន្ទុផ្កាយមធ្យមភាគ
+    product.rating = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
+
+    await product.save();
+    res.status(201).json({ success: true, message: 'បានបញ្ជូនការវាយតម្លៃជោគជ័យ!' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'បរាជ័យក្នុងការបញ្ជូនការវាយតម្លៃ' });
   }
 });
 
