@@ -16,7 +16,7 @@ function Checkout() {
     name: '',
     phone: '',
     address: '',
-    paymentMethod: 'cod' // cod = Cash on Delivery, aba = ABA Pay
+    paymentMethod: 'cod'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +29,6 @@ function Checkout() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // ចងក្រងទិន្នន័យបញ្ជាទិញ
     const orderData = {
       customerName: formData.name,
       phone: formData.phone,
@@ -40,7 +39,6 @@ function Checkout() {
     };
 
     try {
-      // បញ្ជូនទៅកាន់ API
       const response = await fetch('https://v-cart-backend.onrender.com/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,8 +47,8 @@ function Checkout() {
 
       if (response.ok) {
         alert(`អបអរសាទរ ${formData.name}! ការបញ្ជាទិញរបស់អ្នកទទួលបានជោគជ័យ។`);
-        localStorage.removeItem('v-cart-items'); // លុបកន្ត្រកចោល
-        window.location.href = "/"; // ត្រឡប់ទៅទំព័រដើមវិញ
+        localStorage.removeItem('v-cart-items'); 
+        window.location.href = "/"; 
       } else {
         alert('មានបញ្ហាក្នុងការបញ្ជាទិញ សូមព្យាយាមម្ដងទៀត។');
       }
@@ -60,14 +58,6 @@ function Checkout() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-    // សម្រាប់ពេលនេះ យើងធ្វើការក្លែងបន្លំថាការបញ្ជាទិញជោគជ័យ
-    setTimeout(() => {
-      alert(`អបអរសាទរ ${formData.name}! ការបញ្ជាទិញរបស់អ្នកទទួលបានជោគជ័យ។`);
-      // លុបទិន្នន័យកន្ត្រក (អាចបន្ថែមមុខងារ clearCart ក្នុង Context ពេលក្រោយ)
-      localStorage.removeItem('v-cart-items'); 
-      window.location.href = "/"; // ត្រឡប់ទៅទំព័រដើមវិញ
-    }, 1500);
   };
 
   if (currentCart.length === 0) {
@@ -89,7 +79,6 @@ function Checkout() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* ផ្នែកបំពេញព័ត៌មាន */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="text-xl font-bold text-gray-800 mb-6 border-b pb-3">ព័ត៌មានដឹកជញ្ជូន</h2>
           
@@ -129,7 +118,6 @@ function Checkout() {
           </form>
         </div>
 
-        {/* ផ្នែកសង្ខេបការបញ្ជាទិញ */}
         <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 h-fit">
           <h3 className="text-lg font-bold text-gray-800 mb-4">ទំនិញរបស់អ្នក ({currentCart.length})</h3>
           
