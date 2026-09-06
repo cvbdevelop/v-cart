@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, LogOut, Lock, Edit } from 'lucide-react';
+import { Trash2, LogOut, Lock, Edit, BarChart3 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 function Admin() {
   const navigate = useNavigate();
@@ -197,6 +198,12 @@ function Admin() {
     }
   };
 
+  // រៀបចំទិន្នន័យសម្រាប់បង្ហាញក្រាហ្វិកចំណូល
+  const chartData = orders.map(o => ({
+    date: new Date(o.createdAt).toLocaleDateString('en-GB'),
+    amount: o.totalAmount
+  })).reverse();
+
   if (loading) {
     return <div className="text-center py-20 text-gray-500 font-medium">កំពុងទាញយកទិន្នន័យ...</div>;
   }
@@ -211,6 +218,28 @@ function Admin() {
         >
           <LogOut size={18} /> ចាកចេញ (Logout)
         </button>
+      </div>
+
+      {/* ផ្នែកក្រាហ្វិកវិភាគចំណូល (Sales Analytics Chart) */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8">
+        <h2 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+          <BarChart3 size={20} className="text-blue-600" /> ស្ថិតិចំណូលតាមការបញ្ជាទិញ ($)
+        </h2>
+        <div className="h-72 w-full">
+          {orders.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-gray-400">មិនទាន់មានទិន្នន័យសម្រាប់បង្ហាញក្រាហ្វិក</div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="amount" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
@@ -271,7 +300,7 @@ function Admin() {
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
               </div>
               <button type="submit" className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl transition">
-                រក្សាទុកលេខសម្ងាត់ថ្មី
+                រក្សាទុករหัสសម្ងាត់ថ្មី
               </button>
             </form>
           </div>

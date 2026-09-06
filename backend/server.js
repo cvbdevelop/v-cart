@@ -32,6 +32,14 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ==================== SCHEMAS ====================
 
+const reviewSchema = new mongoose.Schema({
+  name: String,
+  rating: Number,
+  comment: String,
+  createdAt: { type: Date, default: Date.now }
+});
+// បន្ថែម reviews: [reviewSchema] ទៅក្នុង productSchema ដើម
+
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
@@ -114,6 +122,36 @@ app.put('/api/change-password', protect, async (req, res) => {
 });
 
 // ==================== PRODUCT APIs ====================
+
+// Schema សម្រាប់កូដបញ្ចុះតម្លៃ
+const couponSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true },
+  discountPercent: { type: Number, required: true } // ឧទាហរណ៍៖ 10 (ស្មើនឹង 10%)
+});
+const Coupon = mongoose.model('Coupon', couponSchema);
+
+// API សម្រាប់បង្កើតកូដបញ្ចុះតម្លៃដំបូង (អាចចូលតាម Browser: /api/setup-coupon ដើម្បីបង្កើតកូដ "DISCOUNT10")
+app.get('/api/setup-coupon', async (req, res) => {
+  const exists = await Coupon.findOne({ code: 'DISCOUNT10' });
+  if (exists) return res.json({ message: 'កូដបញ្ចុះតម្លៃមានរួចហើយ' });
+  const newCoupon = new Coupon({ code: 'DISCOUNT10', discountPercent: 10 });
+  await newCoupon.save();
+  res.json({ success: true, message: 'បង្កើតកូដ DISCOUNT10 (បញ្ចុះ 10%) ជោគជ័យ!' });
+});
+
+// API ឆែកកូដបញ្ចុះតម្លៃពេលអតិថិជនវាយបញ្ចូល
+app.post('/api/coupons/verify', async (req, res) => {
+  try {
+    const { code } = req.body;
+    const coupon = await Coupon.findOne({ code: code.trim().toUpperCase() });
+    if (!coupon) {
+      return res.status(404).json({ success: false, message: 'កូដបញ្ចុះតម្លៃមិនត្រឹមត្រូវ' });
+    }
+    res.json({ success: true, discountPercent: coupon.discountPercent });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
 
 app.get('/api/products', async (req, res) => {
   try {

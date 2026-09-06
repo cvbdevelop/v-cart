@@ -1,157 +1,209 @@
-import { useState } from 'react';
-import { useCart } from '../contexts/CartContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { useState, useContext } from 'react';
+import { CartContext } from '../contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
+import { Tag, CheckCircle } from 'lucide-react';
 
 function Checkout() {
-  const { cartItems, cart } = useCart();
+  const { cart, clearCart } = useContext(CartContext);
   const navigate = useNavigate();
-  
-  const currentCart = cartItems || cart || [];
-  const subtotal = currentCart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-  const shipping = subtotal > 0 ? 2.00 : 0;
-  const total = subtotal + shipping;
 
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    paymentMethod: 'cod'
-  });
+  const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [loading, setLoading] = useState(false);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // States សម្រាប់កូដបញ្ចុះតម្លៃ
+  const [couponCode, setCouponCode] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [couponApplied, setCouponApplied] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // គណនាតម្លៃដើម
+  const subtotal = cart.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+  // គណនាតម្លៃបញ្ចុះតម្លៃជាទឹកប្រាក់
+  const discountAmount = (subtotal * discountPercent) / 100;
+  // តម្លៃសរុបចុងក្រោយ
+  const totalAmount = subtotal - discountAmount;
+
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponCode) return;
+    try {
+      const res = await fetch('https://v-cart-backend.onrender.com/api/coupons/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDiscountPercent(data.discountPercent);
+        setCouponApplied(true);
+        alert(`បានដាក់បញ្ចូលកូដបញ្ចុះតម្លៃជោគជ័យ ${data.discountPercent}%!`);
+      } else {
+        alert(data.message || 'កូដមិនត្រឹមត្រូវ');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+    }
   };
 
-  const handlePlaceOrder = async (e) => {
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    const orderData = {
-      customerName: formData.name,
-      phone: formData.phone,
-      address: formData.address,
-      paymentMethod: formData.paymentMethod,
-      items: currentCart,
-      totalAmount: total
-    };
+    if (cart.length === 0) {
+      alert('កន្ត្រកទំនិញរបស់អ្នកទទេ។');
+      return;
+    }
 
+    setLoading(true);
     try {
+      const orderData = {
+        customerName,
+        phone,
+        address,
+        paymentMethod,
+        items: cart,
+        totalAmount
+      };
+
       const response = await fetch('https://v-cart-backend.onrender.com/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
       });
 
-      if (response.ok) {
-        alert(`អបអរសាទរ ${formData.name}! ការបញ្ជាទិញរបស់អ្នកទទួលបានជោគជ័យ។`);
-        localStorage.removeItem('v-cart-items'); 
-        window.location.href = "/"; 
+      const data = await response.json();
+      if (data.success) {
+        alert('បញ្ជាទិញទំនិញបានជោគជ័យ!');
+        clearCart();
+        navigate('/tracking');
       } else {
-        alert('មានបញ្ហាក្នុងការបញ្ជាទិញ សូមព្យាយាមម្ដងទៀត។');
+        alert(data.message || 'មានបញ្ហាក្នុងការបញ្ជាទិញ');
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('មានបញ្ហាការភ្ជាប់ទៅកាន់ Server។');
+      console.error('Order Error:', error);
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (currentCart.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">កន្ត្រកទទេរ មិនអាចទូទាត់បានទេ</h2>
-        <Link to="/" className="text-blue-600 hover:underline">ត្រឡប់ទៅទិញទំនិញវិញ</Link>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex items-center gap-2 mb-8">
-        <Link to="/cart" className="text-gray-500 hover:text-blue-600 transition">
-          <ArrowLeft size={24} />
-        </Link>
-        <h1 className="text-3xl font-bold text-gray-800">ការទូទាត់ប្រាក់</h1>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">ទូទាត់ប្រាក់ (Checkout)</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 border-b pb-3">ព័ត៌មានដឹកជញ្ជូន</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* ព័ត៌មានអតិថិជន */}
+        <form onSubmit={handleSubmitOrder} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+          <h2 className="text-lg font-bold text-gray-800 mb-2">ព័ត៌មានអ្នកទទួល</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះពេញ</label>
+            <input 
+              type="text" 
+              required 
+              value={customerName} 
+              onChange={e => setCustomerName(e.target.value)} 
+              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" 
+              placeholder="ឈ្មោះរបស់អ្នក..." 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">លេខទូរស័ព្ទ</label>
+            <input 
+              type="tel" 
+              required 
+              value={phone} 
+              onChange={e => setPhone(e.target.value)} 
+              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" 
+              placeholder="012345678..." 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">អាសយដ្ឋានដឹកជញ្ជូន</label>
+            <textarea 
+              required 
+              rows="2" 
+              value={address} 
+              onChange={e => setAddress(e.target.value)} 
+              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" 
+              placeholder="ផ្ទះលេខ ផ្លូវ សង្កាត់ រាជធានីភ្នំពេញ..." 
+            ></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">វិធីសាស្ត្រទូទាត់</label>
+            <select 
+              value={paymentMethod} 
+              onChange={e => setPaymentMethod(e.target.value)} 
+              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="COD">ទូទាត់ពេលទទួលបានទំនិញ (Cash on Delivery)</option>
+              <option value="ABA">ទូទាត់តាម ABA Pay</option>
+            </select>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading} 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition mt-4"
+          >
+            {loading ? 'កំពុងបញ្ជូន...' : 'បញ្ជាក់ការបញ្ជាទិញ'}
+          </button>
+        </form>
+
+        {/* សង្ខេបកន្ត្រកទំនិញ និងកូដបញ្ចុះតម្លៃ */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit space-y-6">
+          <h2 className="text-lg font-bold text-gray-800">សង្ខេបការបញ្ជាទិញ ({cart.length} ទំនិញ)</h2>
           
-          <form onSubmit={handlePlaceOrder} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះអ្នកទទួល *</label>
-              <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ឧ. ចាន់ វិបុល" />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">លេខទូរស័ព្ទ *</label>
-              <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ឧ. 012 345 678" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">អាសយដ្ឋានដឹកជញ្ជូន *</label>
-              <textarea required name="address" value={formData.address} onChange={handleChange} rows="3" className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="លេខផ្ទះ ផ្លូវ សង្កាត់ ខណ្ឌ..."></textarea>
-            </div>
-
-            <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4 border-b pb-3">វិធីសាស្ត្រទូទាត់ប្រាក់</h2>
-            
-            <div className="space-y-3">
-              <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${formData.paymentMethod === 'cod' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}>
-                <input type="radio" name="paymentMethod" value="cod" checked={formData.paymentMethod === 'cod'} onChange={handleChange} className="mr-3 w-5 h-5 text-blue-600" />
-                <span className="font-medium text-gray-800">ទូទាត់សាច់ប្រាក់ពេលទទួលទំនិញ (COD)</span>
-              </label>
-
-              <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${formData.paymentMethod === 'aba' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}>
-                <input type="radio" name="paymentMethod" value="aba" checked={formData.paymentMethod === 'aba'} onChange={handleChange} className="mr-3 w-5 h-5 text-blue-600" />
-                <span className="font-medium text-gray-800">ផ្ទេរប្រាក់តាមគណនី ABA Bank</span>
-              </label>
-            </div>
-
-            <button disabled={isSubmitting} type="submit" className={`w-full mt-8 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm ${isSubmitting ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}>
-              {isSubmitting ? 'កំពុងដំណើរការ...' : 'បញ្ជាក់ការបញ្ជាទិញ'} <CheckCircle size={20} />
-            </button>
-          </form>
-        </div>
-
-        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 h-fit">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">ទំនិញរបស់អ្នក ({currentCart.length})</h3>
-          
-          <div className="space-y-4 mb-6 max-h-96 overflow-y-auto pr-2">
-            {currentCart.map((item, index) => (
-              <div key={index} className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
-                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md border" />
-                <div className="flex-grow">
-                  <h4 className="text-sm font-bold text-gray-800 line-clamp-1">{item.name}</h4>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {item.selectedSize && <span className="mr-2">ទំហំ: {item.selectedSize}</span>}
-                    {item.selectedColor && <span>ពណ៌: {item.selectedColor}</span>}
-                  </div>
-                  <div className="flex justify-between mt-2">
-                    <span className="text-sm font-medium text-gray-600">x{item.quantity || 1}</span>
-                    <span className="text-sm font-bold text-blue-600">${(item.price * (item.quantity || 1)).toFixed(2)}</span>
-                  </div>
+          <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
+            {cart.map(item => (
+              <div key={item._id || item.id} className="flex justify-between items-center text-sm border-b pb-2">
+                <div>
+                  <p className="font-medium text-gray-800">{item.name}</p>
+                  <p className="text-gray-500 text-xs">ចំនួន: {item.quantity || 1}</p>
                 </div>
+                <span className="font-semibold">${(item.price * (item.quantity || 1)).toFixed(2)}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-gray-200 pt-4 space-y-2 text-sm">
+          {/* ប្រអប់បញ្ចូលកូដបញ្ចុះតម្លៃ */}
+          <div className="border-t pt-4">
+            <form onSubmit={handleApplyCoupon} className="flex gap-2">
+              <div className="relative flex-grow">
+                <Tag className="absolute left-3 top-2.5 text-gray-400" size={16} />
+                <input 
+                  type="text" 
+                  value={couponCode} 
+                  onChange={e => setCouponCode(e.target.value)} 
+                  placeholder="កូដបញ្ចុះតម្លៃ (ឧ. DISCOUNT10)" 
+                  className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                />
+              </div>
+              <button type="submit" className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                ប្រើប្រាស់
+              </button>
+            </form>
+            {couponApplied && (
+              <p className="text-green-600 text-xs mt-2 flex items-center gap-1">
+                <CheckCircle size={14} /> បានបញ្ចុះតម្លៃ {discountPercent}% ជោគជ័យ!
+              </p>
+            )}
+          </div>
+
+          <div className="border-t pt-4 space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
-              <span>តម្លៃសរុប</span>
+              <span>តម្លៃសរុបកន្ត្រក៖</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
-              <span>សេវាដឹកជញ្ជូន</span>
-              <span>${shipping.toFixed(2)}</span>
-            </div>
-            <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold text-gray-800">
-              <span>សរុបត្រូវបង់</span>
-              <span className="text-blue-600">${total.toFixed(2)}</span>
+            {couponApplied && (
+              <div className="flex justify-between text-green-600">
+                <span>បញ្ចុះតម្លៃ ({discountPercent}%)៖</span>
+                <span>-${discountAmount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t">
+              <span>ទឹកប្រាក់ត្រូវបង់សរុប៖</span>
+              <span className="text-blue-600">${totalAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
