@@ -1,62 +1,56 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
-
-  // បន្ថែមទំនិញ
-  const addToCart = (product) => {
-  setCartItems((prevItems) => {
-    // ពិនិត្យមើលថាតើទំនិញដែលមាន ID, ទំហំ និងពណ៌ដូចគ្នា មានរួចហើយឬនៅ
-    const existingIndex = prevItems.findIndex(
-      (item) => 
-        (item._id === product._id || item.id === product.id) &&
-        item.selectedSize === product.selectedSize &&
-        item.selectedColor === product.selectedColor
-    );
-
-    if (existingIndex > -1) {
-      //បើមានហើយ បន្ថែមចំនួន (quantity) ជំនួសការបង្កើតថ្មី
-      const newItems = [...prevItems];
-      newItems[existingIndex].quantity += (product.quantity || 1);
-      return newItems;
-    } else {
-      // បើមិនទាន់មាន បន្ថែមចូលថ្មី
-      return [...prevItems, { ...product, quantity: product.quantity || 1 }];
-    }
+  // ទាញយកទិន្នន័យកន្ត្រកពី Local Storage បើមាន
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart = localStorage.getItem('v-cart-items');
+    return savedCart ? JSON.parse(savedCart) : [];
   });
-};
 
-  // ដកទំនិញចេញ
-  const removeFromCart = (productId) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  // រក្សាទុកទិន្នន័យទៅ Local Storage ពេលមានការប្រែប្រួល
+  useEffect(() => {
+    localStorage.setItem('v-cart-items', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = (product) => {
+    setCartItems((prevItems) => {
+      const existingIndex = prevItems.findIndex(
+        (item) => 
+          (item._id === product._id || item.id === product.id) &&
+          item.selectedSize === product.selectedSize &&
+          item.selectedColor === product.selectedColor
+      );
+
+      if (existingIndex > -1) {
+        const newItems = [...prevItems];
+        newItems[existingIndex].quantity += (product.quantity || 1);
+        return newItems;
+      } else {
+        return [...prevItems, { ...product, quantity: product.quantity || 1 }];
+      }
+    });
   };
 
-  // កែប្រែចំនួន (បូក/ដក)
-  const updateQuantity = (productId, amount) => {
-    setCart((prevCart) =>
-      prevCart.map((item) => {
-        if (item.id === productId) {
-          const newQuantity = item.quantity + amount;
-          return { ...item, quantity: newQuantity > 0 ? newQuantity : 1 };
-        }
-        return item;
-      })
-    );
+  const removeFromCart = (id, size, color) => {
+    setCartItems((prev) => prev.filter(item => 
+      !( (item.id === id || item._id === id) && item.selectedSize === size && item.selectedColor === color )
+    ));
   };
 
-  // លុបកន្ត្រកពេលទូទាត់រួច
-  const clearCart = () => {
-    setCart([]);
+  const updateQuantity = (id, quantity, size, color) => {
+    setCartItems((prev) => prev.map(item => {
+      if ((item.id === id || item._id === id) && item.selectedSize === size && item.selectedColor === color) {
+        return { ...item, quantity: Math.max(1, quantity) };
+      }
+      return item;
+    }));
   };
-
-  // គណនាចំនួន និងតម្លៃ
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal }}>
+    // យើងបញ្ជូនទាំង cartItems និង cart ដើម្បីការពារ Error ពី Component ផ្សេងៗ
+    <CartContext.Provider value={{ cartItems, cart: cartItems, addToCart, removeFromCart, updateQuantity }}>
       {children}
     </CartContext.Provider>
   );
