@@ -25,11 +25,42 @@ function Checkout() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // កន្លែងនេះយើងនឹងភ្ជាប់ទៅកាន់ Backend នៅពេលក្រោយ
+    // ចងក្រងទិន្នន័យបញ្ជាទិញ
+    const orderData = {
+      customerName: formData.name,
+      phone: formData.phone,
+      address: formData.address,
+      paymentMethod: formData.paymentMethod,
+      items: currentCart,
+      totalAmount: total
+    };
+
+    try {
+      // បញ្ជូនទៅកាន់ API
+      const response = await fetch('https://v-cart-backend.onrender.com/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      if (response.ok) {
+        alert(`អបអរសាទរ ${formData.name}! ការបញ្ជាទិញរបស់អ្នកទទួលបានជោគជ័យ។`);
+        localStorage.removeItem('v-cart-items'); // លុបកន្ត្រកចោល
+        window.location.href = "/"; // ត្រឡប់ទៅទំព័រដើមវិញ
+      } else {
+        alert('មានបញ្ហាក្នុងការបញ្ជាទិញ សូមព្យាយាមម្ដងទៀត។');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('មានបញ្ហាការភ្ជាប់ទៅកាន់ Server។');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
     // សម្រាប់ពេលនេះ យើងធ្វើការក្លែងបន្លំថាការបញ្ជាទិញជោគជ័យ
     setTimeout(() => {
       alert(`អបអរសាទរ ${formData.name}! ការបញ្ជាទិញរបស់អ្នកទទួលបានជោគជ័យ។`);

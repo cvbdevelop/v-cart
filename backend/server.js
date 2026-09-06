@@ -68,6 +68,40 @@ const productSchema = new mongoose.Schema({
 });
 const Product = mongoose.model('Product', productSchema);
 
+// ប្រព័ន្ធផ្ទុកទិន្នន័យការបញ្ជាទិញ (Order Schema)
+const orderSchema = new mongoose.Schema({
+  customerName: String,
+  phone: String,
+  address: String,
+  paymentMethod: String,
+  items: Array,
+  totalAmount: Number,
+  status: { type: String, default: 'កំពុងរង់ចាំ' }, // Pending
+  createdAt: { type: Date, default: Date.now }
+});
+const Order = mongoose.model('Order', orderSchema);
+
+// API សម្រាប់បង្កើតការបញ្ជាទិញថ្មី
+app.post('/api/orders', async (req, res) => {
+  try {
+    const newOrder = new Order(req.body);
+    await newOrder.save();
+    res.status(201).json(newOrder);
+  } catch (error) {
+    res.status(500).json({ error: 'បរាជ័យក្នុងការបង្កើតការបញ្ជាទិញ' });
+  }
+});
+
+// API សម្រាប់ទាញយកប្រវត្តិបញ្ជាទិញមកបង្ហាញក្នុង Admin
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 }); // បង្ហាញថ្មីជាងគេមុន
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: 'បរាជ័យក្នុងការទាញយកការបញ្ជាទិញ' });
+  }
+});
+
 // ==================== ផ្នែកគណនី (USER & AUTH) ====================
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },

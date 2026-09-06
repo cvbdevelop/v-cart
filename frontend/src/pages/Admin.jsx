@@ -55,7 +55,16 @@ const [productForm, setProductForm] = useState({
   };
 
   useEffect(() => {
-    fetchData();
+  // ទាញយក Products 
+  fetch('https://v-cart-backend.onrender.com/api/products')
+    .then(res => res.json())
+    .then(data => setProducts(data));
+
+  // ទាញយក Orders (បន្ថែមថ្មី)
+  fetch('https://v-cart-backend.onrender.com/api/orders')
+    .then(res => res.json())
+    .then(data => setOrders(data))
+    .catch(err => console.error("Error fetching orders:", err));
   }, []);
 
   // មុខងារចាកចេញ (Logout)
@@ -373,53 +382,32 @@ const handleEditClick = (product) => {
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">ស្ថានភាព</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {orders.map((order) => (
-                <tr key={order._id} className="hover:bg-gray-50 transition">
-                  
-                  {/* ១. ជួរឈរ "កាលបរិច្ឆេទ" */}
-                  <td className="p-4 text-sm text-gray-600">
-                    {new Date(order.createdAt).toLocaleDateString('km-KH')}
-                  </td>
-                  
-                  {/* ២. ជួរឈរ "អតិថិជន" */}
-                  <td className="p-4">
-                    <p className="font-bold text-gray-800 text-sm">{order.customerName}</p>
-                    <p className="text-xs text-gray-500">{order.phone}</p>
-                  </td>
-                  
-                  {/* ៣. ជួរឈរ "ទំនិញបានបញ្ជាទិញ" */}
-                  <td className="p-4 text-sm text-gray-600">
-                    <ul className="list-disc pl-4 text-xs">
-                      {order.items?.map((i, idx) => <li key={idx}>{i.quantity}x {i.name}</li>)}
-                    </ul>
-                  </td>
-                  
-                  {/* ៤. ជួរឈរ "សរុប" */}
-                  <td className="p-4 text-right font-bold text-blue-600">
-                    ${order.totalAmount.toFixed(2)}
-                  </td>
-                  
-                  {/* ៥. ជួរឈរ "ស្ថានភាព" */}
-                  <td className="px-4 py-3">
-                    <select 
-                      value={order.status || 'Pending'} 
-                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      className={`border px-2 py-1.5 rounded-md text-xs font-semibold focus:outline-none ${
-                      order.status === 'Delivered' ? 'bg-green-100 text-green-700 border-green-200' : 
-                      order.status === 'Shipping' ? 'bg-blue-100 text-blue-700 border-blue-200' : 
-                      'bg-yellow-100 text-yellow-700 border-yellow-200'
-                      }`}
-                      >
-                      <option value="Pending">រង់ចាំ (Pending)</option>
-                      <option value="Shipping">ដឹកជញ្ជូន (Shipping)</option>
-                      <option value="Delivered">ជោគជ័យ (Delivered)</option>
-                    </select>
-                  </td>
-                  
-                </tr>
-              ))}
-            </tbody>
+            <tbody className="text-sm">
+  {orders.length === 0 ? (
+    <tr>
+      <td colSpan="5" className="text-center py-4 text-gray-500">មិនទាន់មានការបញ្ជាទិញនៅឡើយទេ</td>
+    </tr>
+  ) : (
+    orders.map((order, index) => (
+      <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+        <td className="py-3 px-4">
+          <div className="font-medium text-gray-800">{order.customerName}</div>
+          <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString('en-GB')}</div>
+        </td>
+        <td className="py-3 px-4">{order.phone}</td>
+        <td className="py-3 px-4">
+          <div className="line-clamp-2 max-w-xs">{order.items.map(i => i.name).join(', ')}</div>
+        </td>
+        <td className="py-3 px-4 font-bold text-blue-600">${order.totalAmount.toFixed(2)}</td>
+        <td className="py-3 px-4">
+          <span className={`px-2 py-1 text-xs rounded-full ${order.status === 'កំពុងរង់ចាំ' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+            {order.status}
+          </span>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
           </table>
         </div>
       </div>
