@@ -54,7 +54,7 @@ const [productForm, setProductForm] = useState({
     }
   };
 
-  // មុខងារសម្រាប់បញ្ជូនស្ថានភាពថ្មីទៅកាន់ Server
+  // មុខងារសម្រាប់បញ្ជូនស្ថានភាពថ្មីទៅកាន់ Server (ត្រូវមានតែមួយគត់)
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const response = await fetch(`https://v-cart-backend.onrender.com/api/orders/${orderId}/status`, {
@@ -64,7 +64,6 @@ const [productForm, setProductForm] = useState({
       });
       
       if (response.ok) {
-        // ធ្វើបច្ចុប្បន្នភាពទិន្នន័យក្នុងតារាងភ្លាមៗដោយមិនបាច់ Refresh
         setOrders(orders.map(order => 
           order._id === orderId ? { ...order, status: newStatus } : order
         ));
