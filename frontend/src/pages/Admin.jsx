@@ -54,6 +54,28 @@ const [productForm, setProductForm] = useState({
     }
   };
 
+  // មុខងារសម្រាប់បញ្ជូនស្ថានភាពថ្មីទៅកាន់ Server
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`https://v-cart-backend.onrender.com/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        // ធ្វើបច្ចុប្បន្នភាពទិន្នន័យក្នុងតារាងភ្លាមៗដោយមិនបាច់ Refresh
+        setOrders(orders.map(order => 
+          order._id === orderId ? { ...order, status: newStatus } : order
+        ));
+      } else {
+        alert('បរាជ័យក្នុងការកែប្រែស្ថានភាព');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -416,9 +438,19 @@ const handleEditClick = (product) => {
         </td>
         <td className="py-3 px-4 font-bold text-blue-600">${order.totalAmount.toFixed(2)}</td>
         <td className="py-3 px-4">
-          <span className={`px-2 py-1 text-xs rounded-full ${order.status === 'កំពុងរង់ចាំ' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-            {order.status}
-          </span>
+          <select
+            value={order.status}
+            onChange={(e) => handleStatusChange(order._id, e.target.value)}
+            className={`px-2 py-1 text-xs rounded-full border-0 font-bold cursor-pointer outline-none shadow-sm ${
+              order.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+              order.status === 'Shipping' ? 'bg-blue-100 text-blue-700' :
+              'bg-green-100 text-green-700'
+            }`}
+          >
+            <option value="Pending">Pending (រង់ចាំ)</option>
+            <option value="Shipping">Shipping (កំពុងដឹកជញ្ជូន)</option>
+            <option value="Delivered">Delivered (បានប្រគល់)</option>
+          </select>
         </td>
       </tr>
     ))
