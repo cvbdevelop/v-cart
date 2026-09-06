@@ -1,134 +1,86 @@
-import { Link } from 'react-router-dom';
-// ១. បន្ថែមការ Import toast នៅខាងលើគេ
 import { useState, useEffect } from 'react';
-import { useCart } from '../contexts/CartContext';
-import { Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 function Home() {
-  const { addToCart } = useCart(); 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // States សម្រាប់ Search និង Filter
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://v-cart-backend.onrender.com/api/products');
-        const data = await response.json();
-        const formattedData = data.map(item => ({ ...item, id: item._id }));
-        setProducts(formattedData);
-        setLoading(false);
-      } catch (error) {
-        console.error('បរាជ័យក្នុងការទាញយកទំនិញ:', error);
+        const res = await fetch('https://v-cart-backend.onrender.com/api/products');
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
         setLoading(false);
       }
     };
     fetchProducts();
   }, []);
 
-  // ត្រងទំនិញតាម Category និង Keyword ស្វែងរក
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredProducts = activeCategory === 'all' 
+    ? products 
+    : products.filter(p => p.category === activeCategory);
 
-  // បន្ថែមមុខងារនេះនៅពីលើ if (loading)
-  const handleAddToCart = (product) => {
-    // កំណត់ទំហំ និងពណ៌លំនាំដើម បើទំនិញនោះមានជម្រើស
-    const productToAdd = {
-      ...product,
-      selectedSize: product.sizes && product.sizes.length > 0 ? product.sizes[0] : null,
-      selectedColor: product.colors && product.colors.length > 0 ? product.colors[0] : null
-    };
-    
-    addToCart(productToAdd);
-    alert(`បានបន្ថែម ${product.name} ចូលកន្ត្រក!`);
-  };
+  if (loading) return <div className="text-center py-20 text-gray-500 font-medium">កំពុងទាញយកទិន្នន័យ...</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* ផ្នែកស្វែងរក និង តម្រងប្រភេទ (Search & Filter Bar) */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        
-        {/* Search Bar */}
-        <div className="relative w-full md:w-96">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-            <Search size={20} />
-          </span>
-          <input
-            type="text"
-            placeholder="ស្វែងរកទំនិញ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          />
-        </div>
-
-        {/* Category Filters */}
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {['all', 'electronics', 'clothing', 'bags', 'general'].map((cat) => {
-            const labels = {
-              all: 'ទាំងអស់',
-              electronics: 'អេឡិចត្រូនិក',
-              clothing: 'សម្លៀកបំពាក់',
-              bags: 'កាបូប & ស្បែកជើង',
-              general: 'ទូទៅ'
-            };
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  selectedCategory === cat 
-                    ? 'bg-blue-600 text-white shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {labels[cat] || cat}
-              </button>
-            );
-          })}
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      
+      {/* ម៉ឺនុយជ្រើសរើសប្រភេទទំនិញ (Categories) */}
+      <div className="flex justify-end mb-8">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button onClick={() => setActiveCategory('all')} className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>ទាំងអស់</button>
+          <button onClick={() => setActiveCategory('clothing')} className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === 'clothing' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>សម្លៀកបំពាក់</button>
+          <button onClick={() => setActiveCategory('shoes')} className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === 'shoes' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>ស្បែកជើង</button>
+          <button onClick={() => setActiveCategory('electronics')} className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === 'electronics' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>អេឡិចត្រូនិច</button>
+          <button onClick={() => setActiveCategory('accessories')} className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === 'accessories' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>គ្រឿងតុបតែង</button>
+          <button onClick={() => setActiveCategory('general')} className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === 'general' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>ទូទៅ</button>
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 border-l-4 border-blue-500 pl-3">
+      <h2 className="text-xl font-bold text-gray-800 mb-6 border-l-4 border-blue-600 pl-3">
         ផលិតផលថ្មីៗ ({filteredProducts.length})
       </h2>
       
-      {filteredProducts.length === 0 ? (
-        <div className="text-center py-16 text-gray-500 bg-white rounded-xl border border-gray-100">
-          រកមិនឃើញផលិតផលដែលអ្នកចង់បានទេ
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 overflow-hidden transition-all duration-300 group">
-              <div className="overflow-hidden cursor-pointer">
-                <Link to={`/product/${product.id || product._id}`}>
-                  <img src={product.image} alt={product.name} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" />
+      {/* បញ្ជីទំនិញ (Product Grid) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+        {filteredProducts.map(product => (
+          <div key={product._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden group flex flex-col">
+            <Link to={`/product/${product._id}`} className="relative aspect-square overflow-hidden bg-gray-50 block">
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            </Link>
+            
+            <div className="p-4 flex flex-col flex-grow">
+              <p className="text-xs text-gray-400 mb-1 uppercase tracking-wider">{product.category || 'general'}</p>
+              <Link to={`/product/${product._id}`}>
+                <h3 className="font-bold text-gray-800 text-sm md:text-base mb-1 line-clamp-2 hover:text-blue-600 transition">
+                  {product.name}
+                </h3>
+              </Link>
+              
+              <div className="mt-auto pt-3 flex flex-col gap-3">
+                <span className="font-bold text-blue-600">${product.price.toFixed(2)}</span>
+                
+                {/* ប៊ូតុងចូលទៅមើលទំព័រលម្អិត ដើម្បីរើសទំហំ និងពណ៌សិន */}
+                <Link 
+                  to={`/product/${product._id}`}
+                  className="w-full bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white font-bold py-2 rounded-lg transition text-sm text-center block"
+                >
+                  មើលលម្អិត & ជ្រើសរើស
                 </Link>
               </div>
-              <div className="p-5">
-                {/* កូដឈ្មោះ និងតម្លៃទុកដដែល */}
-                <span className="text-xs bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full font-medium">
-                  {product.category || 'general'}
-                </span>
-                <h3 className="text-lg font-medium text-gray-800 line-clamp-2 min-h-[56px] mt-2">{product.name}</h3>
-                <p className="text-xl text-blue-600 font-bold mt-2">${product.price.toFixed(2)}</p>
-                
-                <button 
-                  onClick={() => handleAddToCart(product)} 
-                  className="mt-4 w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-medium py-2.5 rounded-lg transition-colors duration-300"
-                >
-                  បន្ថែមចូលកន្ត្រក
-                </button>
-              </div>
             </div>
-          ))}
+          </div>
+        ))}
+      </div>
+
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-12 text-gray-500">
+          មិនមានទំនិញក្នុងប្រភេទនេះទេ។
         </div>
       )}
     </div>
