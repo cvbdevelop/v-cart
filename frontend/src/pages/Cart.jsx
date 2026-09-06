@@ -3,14 +3,18 @@ import { Link } from 'react-router-dom';
 import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 
 function Cart() {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+  // ទាញយកទិន្នន័យ (ហៅទាំង cartItems និង cart ដើម្បីការពារការខុសឈ្មោះអថេរក្នុង Context)
+  const { cartItems, cart, removeFromCart, updateQuantity } = useCart();
 
-  // គណនាតម្លៃសរុបទាំងអស់
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 2.00 : 0; // ថ្លៃដឹកជញ្ជូនគំរូ $2
+  // បង្កើតទិន្នន័យបណ្តោះអាសន្ន ដើម្បីការពារកុំឱ្យ Error ផ្ទាំងសបើទិន្នន័យ undefined
+  const currentCart = cartItems || cart || [];
+
+  // គណនាតម្លៃសរុបទាំងអស់ (ប្រើ currentCart ជំនួស)
+  const subtotal = currentCart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+  const shipping = subtotal > 0 ? 2.00 : 0;
   const total = subtotal + shipping;
 
-  if (cartItems.length === 0) {
+  if (currentCart.length === 0) {
     return (
       <div className="container mx-auto px-4 py-20 text-center max-w-xl">
         <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
@@ -28,13 +32,13 @@ function Cart() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-        <ShoppingBag className="text-blue-600" /> កន្ត្រកទំនិញរបស់ฉัน
+        <ShoppingBag className="text-blue-600" /> កន្ត្រកទំនិញរបស់ខ្ញុំ
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* បញ្ជីទំនិញក្នុងកន្ត្រក */}
         <div className="lg:col-span-2 space-y-4">
-          {cartItems.map((item, index) => (
+          {currentCart.map((item, index) => (
             <div key={index} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-4">
               <img src={item.image} alt={item.name} className="w-24 h-24 object-contain bg-gray-50 rounded-xl p-2" />
               
@@ -48,15 +52,15 @@ function Cart() {
                   {item.selectedColor && <span className="bg-gray-100 px-2.5 py-1 rounded-md">ពណ៌: <strong className="text-gray-700">{item.selectedColor}</strong></span>}
                 </div>
 
-                {/* ប៊ូតុងកែប្រែចំនួន */}
+                {/* ប៊ូតុងកែប្រែចំនួន (ការពារករណីដែលមិនទាន់មានមុខងារ updateQuantity ក្នុង Context) */}
                 <div className="flex items-center justify-center sm:justify-start gap-3">
                   <button 
-                    onClick={() => updateQuantity(item._id || item.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
+                    onClick={() => updateQuantity && updateQuantity(item._id || item.id, Math.max(1, (item.quantity || 1) - 1), item.selectedSize, item.selectedColor)}
                     className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-gray-600 transition flex items-center justify-center"
                   >-</button>
-                  <span className="font-bold text-gray-800 w-6 text-center">{item.quantity}</span>
+                  <span className="font-bold text-gray-800 w-6 text-center">{item.quantity || 1}</span>
                   <button 
-                    onClick={() => updateQuantity(item._id || item.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
+                    onClick={() => updateQuantity && updateQuantity(item._id || item.id, (item.quantity || 1) + 1, item.selectedSize, item.selectedColor)}
                     className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-gray-600 transition flex items-center justify-center"
                   >+</button>
                 </div>
@@ -64,9 +68,9 @@ function Cart() {
 
               {/* តម្លៃសរុបតាមមុខទំនិញ និងប៊ូតុងលុប */}
               <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0">
-                <p className="font-black text-gray-800 text-lg">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-black text-gray-800 text-lg">${(item.price * (item.quantity || 1)).toFixed(2)}</p>
                 <button 
-                  onClick={() => removeFromCart(item._id || item.id, item.selectedSize, item.selectedColor)}
+                  onClick={() => removeFromCart && removeFromCart(item._id || item.id, item.selectedSize, item.selectedColor)}
                   className="text-red-400 hover:text-red-600 p-2 transition mt-2"
                 >
                   <Trash2 size={18} />
@@ -76,7 +80,7 @@ function Cart() {
           ))}
         </div>
 
-        {/* ផ្នែកสรุปសបញ្ជីទូទាត់ (Order Summary) */}
+        {/* ផ្នែកសង្ខេបការបញ្ជាទិញ (Order Summary) */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
           <h3 className="text-xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-100">សង្ខេបការបញ្ជាទិញ</h3>
           
