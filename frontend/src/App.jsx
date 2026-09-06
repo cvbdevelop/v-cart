@@ -27,6 +27,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
+              // បន្ថែម Route ថ្មីនៅក្រោម <Route path="/checkout" ... />
               <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<Admin />} />
               

@@ -8,9 +8,9 @@ function Admin() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   // ១. បន្ថែម countInStock: 0 ទៅក្នុង State ដើម
-const [productForm, setProductForm] = useState({ 
+  const [productForm, setProductForm] = useState({ 
   name: '', price: '', image: '', category: 'general', countInStock: 0, description: '', sizes: '', colors: '' 
-});
+  });
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate(); // ថែមថ្មី
   const [uploading, setUploading] = useState(false);
@@ -76,6 +76,10 @@ const [productForm, setProductForm] = useState({
   };
 
   useEffect(() => {
+    if (!token) {
+      navigate('/login');
+    }
+  }, [token, navigate]);
     const fetchData = async () => {
       try {
         // ទាញយកទិន្នន័យទំនិញ និង ប្រវត្តិបញ្ជាទិញ ព្រមគ្នា
