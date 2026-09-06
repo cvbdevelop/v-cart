@@ -10,30 +10,27 @@ import { CartProvider } from './contexts/CartContext';
 import { Toaster } from 'react-hot-toast';
 import ProductDetail from './pages/ProductDetail';
 import Footer from './components/Footer';
+// ផ្នែកខាងលើ៖ បន្ថែមការ Import ទាំង២នេះ
+import { WishlistProvider } from './contexts/WishlistContext';
+import Wishlist from './pages/Wishlist';
 
+// នៅក្នុងមុខងារ return () សូមរុំ WishlistProvider ពីក្រៅ និងបន្ថែម Route:
 function App() {
   return (
     <CartProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <Toaster position="top-center" reverseOrder={false} />
-          
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/login" element={<Login />} />           
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/tracking" element={<OrderTracking />} /> {/* <--- Route តាមដាន */}
-            </Routes>
-          </main>
-          
-          <Footer />
-        </div>
-      </Router>
+      <WishlistProvider> {/* រុំពីក្រៅ Navbar និង Routes */}
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/tracking" element={<OrderTracking />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/wishlist" element={<Wishlist />} /> {/* បន្ថែម Route នេះ */}
+        </Routes>
+      </WishlistProvider>
     </CartProvider>
   );
 }

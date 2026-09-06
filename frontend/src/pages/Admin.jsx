@@ -32,30 +32,36 @@ function Admin() {
       return;
     }
 
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       try {
-        const [productsRes, ordersRes] = await Promise.all([
-          fetch('https://v-cart-backend.onrender.com/api/products'),
-          fetch('https://v-cart-backend.onrender.com/api/orders')
-        ]);
-
-        if (productsRes.ok) {
-          const productsData = await productsRes.json();
-          setProducts(productsData);
-        }
-        
-        if (ordersRes.ok) {
-          const ordersData = await ordersRes.json();
-          setOrders(ordersData);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
+        const res = await fetch('https://v-cart-backend.onrender.com/api/products');
+        if (res.ok) setProducts(await res.json());
+      } catch (err) { console.error(err); }
     };
 
-    fetchData();
+    const fetchOrders = async (isInitialFetch = false) => {
+      try {
+        const res = await fetch('https://v-cart-backend.onrender.com/api/orders');
+        if (res.ok) {
+          const newOrders = await res.json();
+          setOrders(prevOrders => {
+            // លេងសំឡេង (Audio) ប្រសិនបើចំនួន Order ថ្មីច្រើនជាងមុន
+            if (!isInitialFetch && newOrders.length > prevOrders.length && prevOrders.length > 0) {
+              const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+              audio.play().catch(e => console.log('Audio error:', e));
+            }
+            return newOrders;
+          });
+        }
+      } catch (err) { console.error(err); } finally { setLoading(false); }
+    };
+
+    fetchProducts();
+    fetchOrders(true); // ទាញយកទិន្នន័យលើកទី១
+
+    // ដំណើរការទាញយកទិន្នន័យពីក្រោយ (Polling) រៀងរាល់ ១៥ វិនាទី
+    const intervalId = setInterval(() => fetchOrders(false), 15000);
+    return () => clearInterval(intervalId); // បិទ Polling វិញពេលចាកចេញពីផ្ទាំង Admin
   }, [navigate]);
 
   const handleLogout = () => {

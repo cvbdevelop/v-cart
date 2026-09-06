@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Search } from 'lucide-react';
+import { ShoppingCart, User, Search, Heart } from 'lucide-react';
 import { useContext } from 'react';
 import { CartContext } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 
 function Navbar() {
-  // កូដការពារសុវត្ថិភាព
-  const context = useContext(CartContext) || {};
-  const cart = context.cart || [];
-
-  // គណនាចំនួនទំនិញសរុប (ការពារ Error)
+  const cartContext = useContext(CartContext) || {};
+  const cart = cartContext.cart || [];
   const cartCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+
+  const wishlistContext = useWishlist() || {};
+  const wishlist = wishlistContext.wishlist || [];
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -26,6 +27,15 @@ function Navbar() {
         <div className="flex items-center gap-4 lg:gap-6">
           <Link to="/tracking" className="text-sm font-medium text-gray-600 hover:text-blue-600 hidden md:block">តាមដានការបញ្ជាទិញ</Link>
           
+          <Link to="/wishlist" className="relative text-gray-600 hover:text-red-500 transition">
+            <Heart size={24} />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
+                {wishlist.length}
+              </span>
+            )}
+          </Link>
+
           <Link to="/cart" className="relative text-gray-600 hover:text-blue-600 transition">
             <ShoppingCart size={24} />
             {cartCount > 0 && (
