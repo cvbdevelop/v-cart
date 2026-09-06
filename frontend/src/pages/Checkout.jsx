@@ -4,7 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Tag, CheckCircle } from 'lucide-react';
 
 function Checkout() {
-  const { cart, clearCart } = useContext(CartContext);
+  // ការពារ Error: បើសិន CartContext មិនទាន់ដើរ វាធានាថា cart ស្មើនឹង [] (Array ទទេ) ជានិច្ច
+  const context = useContext(CartContext) || {};
+  const cart = context.cart || [];
+  const clearCart = context.clearCart || (() => {});
+  
   const navigate = useNavigate();
 
   const [customerName, setCustomerName] = useState('');
@@ -18,7 +22,7 @@ function Checkout() {
   const [discountPercent, setDiscountPercent] = useState(0);
   const [couponApplied, setCouponApplied] = useState(false);
 
-  // គណនាតម្លៃដើម
+  // គណនាតម្លៃដើម (ដោយប្រើ cart ដែលមានសុវត្ថិភាព)
   const subtotal = cart.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
   // គណនាតម្លៃបញ្ចុះតម្លៃជាទឹកប្រាក់
   const discountAmount = (subtotal * discountPercent) / 100;
@@ -93,64 +97,33 @@ function Checkout() {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">ទូទាត់ប្រាក់ (Checkout)</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* ព័ត៌មានអតិថិជន */}
         <form onSubmit={handleSubmitOrder} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
           <h2 className="text-lg font-bold text-gray-800 mb-2">ព័ត៌មានអ្នកទទួល</h2>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះពេញ</label>
-            <input 
-              type="text" 
-              required 
-              value={customerName} 
-              onChange={e => setCustomerName(e.target.value)} 
-              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" 
-              placeholder="ឈ្មោះរបស់អ្នក..." 
-            />
+            <input type="text" required value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="ឈ្មោះរបស់អ្នក..." />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">លេខទូរស័ព្ទ</label>
-            <input 
-              type="tel" 
-              required 
-              value={phone} 
-              onChange={e => setPhone(e.target.value)} 
-              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" 
-              placeholder="012345678..." 
-            />
+            <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="012345678..." />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">អាសយដ្ឋានដឹកជញ្ជូន</label>
-            <textarea 
-              required 
-              rows="2" 
-              value={address} 
-              onChange={e => setAddress(e.target.value)} 
-              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" 
-              placeholder="ផ្ទះលេខ ផ្លូវ សង្កាត់ រាជធានីភ្នំពេញ..." 
-            ></textarea>
+            <textarea required rows="2" value={address} onChange={e => setAddress(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="ផ្ទះលេខ ផ្លូវ សង្កាត់ រាជធានីភ្នំពេញ..."></textarea>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">វិធីសាស្ត្រទូទាត់</label>
-            <select 
-              value={paymentMethod} 
-              onChange={e => setPaymentMethod(e.target.value)} 
-              className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
+            <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="COD">ទូទាត់ពេលទទួលបានទំនិញ (Cash on Delivery)</option>
               <option value="ABA">ទូទាត់តាម ABA Pay</option>
             </select>
           </div>
 
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition mt-4"
-          >
+          <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition mt-4">
             {loading ? 'កំពុងបញ្ជូន...' : 'បញ្ជាក់ការបញ្ជាទិញ'}
           </button>
         </form>
 
-        {/* សង្ខេបកន្ត្រកទំនិញ និងកូដបញ្ចុះតម្លៃ */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit space-y-6">
           <h2 className="text-lg font-bold text-gray-800">សង្ខេបការបញ្ជាទិញ ({cart.length} ទំនិញ)</h2>
           
@@ -166,22 +139,13 @@ function Checkout() {
             ))}
           </div>
 
-          {/* ប្រអប់បញ្ចូលកូដបញ្ចុះតម្លៃ */}
           <div className="border-t pt-4">
             <form onSubmit={handleApplyCoupon} className="flex gap-2">
               <div className="relative flex-grow">
                 <Tag className="absolute left-3 top-2.5 text-gray-400" size={16} />
-                <input 
-                  type="text" 
-                  value={couponCode} 
-                  onChange={e => setCouponCode(e.target.value)} 
-                  placeholder="កូដបញ្ចុះតម្លៃ (ឧ. DISCOUNT10)" 
-                  className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                />
+                <input type="text" value={couponCode} onChange={e => setCouponCode(e.target.value)} placeholder="កូដបញ្ចុះតម្លៃ (ឧ. DISCOUNT10)" className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 uppercase" />
               </div>
-              <button type="submit" className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                ប្រើប្រាស់
-              </button>
+              <button type="submit" className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition">ប្រើប្រាស់</button>
             </form>
             {couponApplied && (
               <p className="text-green-600 text-xs mt-2 flex items-center gap-1">
