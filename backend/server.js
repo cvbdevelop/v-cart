@@ -32,14 +32,6 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ==================== SCHEMAS ====================
 
-const reviewSchema = new mongoose.Schema({
-  name: String,
-  rating: Number,
-  comment: String,
-  createdAt: { type: Date, default: Date.now }
-});
-// បន្ថែម reviews: [reviewSchema] ទៅក្នុង productSchema ដើម
-
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
@@ -70,6 +62,13 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
+// Schema សម្រាប់កូដបញ្ចុះតម្លៃ (Coupons)
+const couponSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true },
+  discountPercent: { type: Number, required: true }
+});
+const Coupon = mongoose.model('Coupon', couponSchema);
+
 // ==================== AUTH & MIDDLEWARE ====================
 
 app.get('/api/setup-admin', async (req, res) => {
@@ -91,6 +90,7 @@ app.post('/api/login', async (req, res) => {
   res.json({ success: true, token });
 });
 
+// Middleware ការពារ Route
 const protect = (req, res, next) => {
   const token = req.header('Authorization');
   if (!token) return res.status(401).json({ success: false, message: 'គ្មានសិទ្ធិ (No Token)' });
@@ -103,7 +103,6 @@ const protect = (req, res, next) => {
   }
 };
 
-// API សម្រាប់ប្តូរលេខសម្ងាត់ Admin
 app.put('/api/change-password', protect, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -121,16 +120,8 @@ app.put('/api/change-password', protect, async (req, res) => {
   }
 });
 
-// ==================== PRODUCT APIs ====================
+// ==================== COUPON APIs ====================
 
-// Schema សម្រាប់កូដបញ្ចុះតម្លៃ
-const couponSchema = new mongoose.Schema({
-  code: { type: String, required: true, unique: true },
-  discountPercent: { type: Number, required: true } // ឧទាហរណ៍៖ 10 (ស្មើនឹង 10%)
-});
-const Coupon = mongoose.model('Coupon', couponSchema);
-
-// API សម្រាប់បង្កើតកូដបញ្ចុះតម្លៃដំបូង (អាចចូលតាម Browser: /api/setup-coupon ដើម្បីបង្កើតកូដ "DISCOUNT10")
 app.get('/api/setup-coupon', async (req, res) => {
   const exists = await Coupon.findOne({ code: 'DISCOUNT10' });
   if (exists) return res.json({ message: 'កូដបញ្ចុះតម្លៃមានរួចហើយ' });
@@ -139,7 +130,6 @@ app.get('/api/setup-coupon', async (req, res) => {
   res.json({ success: true, message: 'បង្កើតកូដ DISCOUNT10 (បញ្ចុះ 10%) ជោគជ័យ!' });
 });
 
-// API ឆែកកូដបញ្ចុះតម្លៃពេលអតិថិជនវាយបញ្ចូល
 app.post('/api/coupons/verify', async (req, res) => {
   try {
     const { code } = req.body;
@@ -152,6 +142,8 @@ app.post('/api/coupons/verify', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 });
+
+// ==================== PRODUCT APIs ====================
 
 app.get('/api/products', async (req, res) => {
   try {
@@ -225,7 +217,6 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-// ចំណាំ៖ បានដក 'protect' ចេញបណ្ដោះអាសន្ន ដើម្បីឱ្យផ្ទាំង Admin ទាញយកទិន្នន័យបានដោយមិនបាច់ប្រើ Token 
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -235,8 +226,6 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-// កែពី app.put('/api/orders/:id/status', protect, async (req, res) => { ...
-// មកជាទម្រង់ខាងក្រោមនេះវិញ៖
 app.put('/api/orders/:id/status', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -249,7 +238,7 @@ app.put('/api/orders/:id/status', async (req, res) => {
   }
 });
 
-// API សម្រាប់អតិថិជនឆែកមើលការបញ្ជាទិញតាមលេខទូរស័ព្ទ
+// API សម្រាប់តាមដានការបញ្ជាទិញតាមលេខទូរស័ព្ទ (Order Tracking)
 app.get('/api/orders/track/:phone', async (req, res) => {
   try {
     const phone = req.params.phone;
