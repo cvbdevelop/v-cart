@@ -260,6 +260,22 @@ function Admin() {
               <label className="block text-sm font-medium text-gray-700 mb-1">ចំនួនក្នុងស្តុក (Stock)</label>
               <input type="number" value={countInStock} onChange={e => setCountInStock(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="0" />
             </div>
+            {/* បន្ថែមកូដប្រអប់ប្រភេទទំនិញនៅត្រង់នេះ (ខាងក្រោមស្តុក) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ប្រភេទទំនិញ (Category)</label>
+              <select 
+                value={category} 
+                onChange={e => setCategory(e.target.value)} 
+                className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="general">ទូទៅ (General)</option>
+                <option value="clothing">សម្លៀកបំពាក់ (Clothing)</option>
+                <option value="shoes">ស្បែកជើង (Shoes)</option>
+                <option value="electronics">អេឡិចត្រូនិច (Electronics)</option>
+                <option value="accessories">គ្រឿងតុបតែង (Accessories)</option>
+              </select>
+            </div>
+            {/* បញ្ចប់ការបន្ថែម */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពទំនិញ (ជ្រើសរើសពីកុំព្យូទ័រ)</label>
               <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} className="w-full border px-3 py-2 rounded-lg outline-none text-sm file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
