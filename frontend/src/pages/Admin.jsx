@@ -16,6 +16,8 @@ function Admin() {
   const [description, setDescription] = useState('');
   // ផ្លាស់ប្តូរ State រូបភាព
   const [imageFile, setImageFile] = useState(null);
+  const [sizes, setSizes] = useState('S, M, L, XL');
+  const [colors, setColors] = useState('Red, Blue, Black');
 
   // Form states for changing password
   const [oldPassword, setOldPassword] = useState('');
@@ -146,7 +148,9 @@ function Admin() {
           countInStock: Number(countInStock), 
           category, 
           description, 
-          image: imageUrl 
+          image: imageUrl,
+          sizes: sizes.split(',').map(s => s.trim()), // បំបែកជា Array
+          colors: colors.split(',').map(c => c.trim()) // បំបែកជា Array
         })
       });
       
@@ -222,6 +226,14 @@ function Admin() {
                 required
                 className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ទំហំ (Sizes - 1,2,3 ឬ S,M,L)</label>
+              <input type="text" value={sizes} onChange={e => setSizes(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="S, M, L, XL" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ពណ៌ (Colors)</label>
+              <input type="text" value={colors} onChange={e => setColors(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Red, Blue, Black" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">បរិយាយ</label>
