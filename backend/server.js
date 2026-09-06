@@ -179,7 +179,9 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-app.put('/api/orders/:id/status', protect, async (req, res) => {
+// កែពី app.put('/api/orders/:id/status', protect, async (req, res) => { ...
+// មកជាទម្រង់ខាងក្រោមនេះវិញ៖
+app.put('/api/orders/:id/status', async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: 'រកមិនឃើញការបញ្ជាទិញ' });
