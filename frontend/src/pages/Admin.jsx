@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
 
 function Admin() {
   const navigate = useNavigate();
@@ -7,16 +8,21 @@ function Admin() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ត្រួតពិនិត្យ Token សុវត្ថិភាព
+  // Form states for adding product
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [countInStock, setCountInStock] = useState('');
+  const [category, setCategory] = useState('general');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
+
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     if (!token) {
       navigate('/login');
+      return;
     }
-  }, [navigate]);
 
-  // ទាញយកទិន្នន័យ
-  useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsRes, ordersRes] = await Promise.all([
@@ -41,7 +47,7 @@ function Admin() {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -63,14 +69,171 @@ function Admin() {
     }
   };
 
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch('https://v-cart-backend.onrender.com/api/products', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, price: Number(price), countInStock: Number(countInStock), category, description, image: image || 'https://placehold.co/400x400?text=Product' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('បន្ថែមទំនិញជោគជ័យ!');
+        window.location.reload();
+      } else {
+        alert('បរាជ័យក្នុងការបន្ថែមទំនិញ');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?')) return;
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`https://v-cart-backend.onrender.com/api/products/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProducts(products.filter(p => p._id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-20 text-gray-500 font-medium">កំពុងទាញយកទិន្នន័យ...</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">ផ្ទាំងគ្រប់គ្រងស្តុក និងការបញ្ជាទិញ (Admin Dashboard)</h1>
-      {/* បន្ថែមតារាង ឬខ្លឹមសារបង្ហាញទិន្នន័យនៅទីនេះ */}
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">ផ្ទាំងគ្រប់គ្រងស្តុក និងការបញ្ជាទិញ (Admin Dashboard)</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit">
+          <h2 className="text-lg font-bold mb-4 text-gray-800">បន្ថែមទំនិញថ្មីក្នុងស្តុក</h2>
+          <form onSubmit={handleAddProduct} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះទំនិញ</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="ឈ្មោះទំនិញ..." />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">តម្លៃ ($)</label>
+              <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ចំនួនក្នុងស្តុក (Stock)</label>
+              <input type="number" value={countInStock} onChange={e => setCountInStock(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="0" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">តំណភ្ជាប់រូបភាព (Image URL)</label>
+              <input type="text" value={image} onChange={e => setImage(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">បរិយាយ</label>
+              <textarea value={description} onChange={e => setDescription(e.target.value)} rows="2" className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="បរិយាយពីទំនិញ..."></textarea>
+            </div>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition">
+              បន្ថែមចូលស្តុក
+            </button>
+          </form>
+        </div>
+
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h2 className="text-lg font-bold mb-4 text-gray-800">គ្រប់គ្រងស្តុកទំនិញ ({products.length})</h2>
+          <div className="overflow-x-auto max-h-[450px]">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b text-sm text-gray-500">
+                  <th className="pb-3 px-2">រូបភាព</th>
+                  <th className="pb-3 px-2">ឈ្មោះទំនិញ</th>
+                  <th className="pb-3 px-2">តម្លៃ</th>
+                  <th className="pb-3 px-2">ស្តុក</th>
+                  <th className="pb-3 px-2 text-right">សកម្មភាព</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {products.map(p => (
+                  <tr key={p._id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-2"><img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded" /></td>
+                    <td className="py-3 px-2 font-medium text-gray-800 line-clamp-1">{p.name}</td>
+                    <td className="py-3 px-2">${p.price.toFixed(2)}</td>
+                    <td className="py-3 px-2">{p.countInStock}</td>
+                    <td className="py-3 px-2 text-right">
+                      <button onClick={() => handleDeleteProduct(p._id)} className="text-red-500 hover:text-red-700 p-1">
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <h2 className="text-lg font-bold mb-4 text-gray-800">ប្រវត្តិការបញ្ជាទិញរបស់អតិថិជន ({orders.length})</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b text-sm text-gray-500">
+                <th className="pb-3 px-4">កាលបរិច្ឆេទ</th>
+                <th className="pb-3 px-4">អតិថិជន</th>
+                <th className="pb-3 px-4">ទូរស័ព្ទ</th>
+                <th className="pb-3 px-4">ទំនិញ</th>
+                <th className="pb-3 px-4">សរុប</th>
+                <th className="pb-3 px-4">ស្ថានភាព</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {orders.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-6 text-gray-500">មិនទាន់មានការបញ្ជាទិញនៅឡើយទេ</td>
+                </tr>
+              ) : (
+                orders.map(order => (
+                  <tr key={order._id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-4 text-gray-500">{new Date(order.createdAt).toLocaleDateString('en-GB')}</td>
+                    <td className="py-3 px-4 font-medium text-gray-800">{order.customerName}</td>
+                    <td className="py-3 px-4">{order.phone}</td>
+                    <td className="py-3 px-4">
+                      <div className="max-w-xs truncate">
+                        {order.items?.map(i => `${i.name} (x${i.quantity || 1})`).join(', ')}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-bold text-blue-600">${order.totalAmount?.toFixed(2)}</td>
+                    <td className="py-3 px-4">
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                        className={`px-3 py-1 text-xs rounded-full border-0 font-bold cursor-pointer outline-none shadow-sm ${
+                          order.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'Shipping' ? 'bg-blue-100 text-blue-700' :
+                          'bg-green-100 text-green-700'
+                        }`}
+                      >
+                        <option value="Pending">Pending (រង់ចាំ)</option>
+                        <option value="Shipping">Shipping (កំពុងដឹកជញ្ជូន)</option>
+                        <option value="Delivered">Delivered (បានប្រគល់)</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
