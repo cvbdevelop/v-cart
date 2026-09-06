@@ -7,16 +7,26 @@ export function CartProvider({ children }) {
 
   // បន្ថែមទំនិញ
   const addToCart = (product) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
-  };
+  setCartItems((prevItems) => {
+    // ពិនិត្យមើលថាតើទំនិញដែលមាន ID, ទំហំ និងពណ៌ដូចគ្នា មានរួចហើយឬនៅ
+    const existingIndex = prevItems.findIndex(
+      (item) => 
+        (item._id === product._id || item.id === product.id) &&
+        item.selectedSize === product.selectedSize &&
+        item.selectedColor === product.selectedColor
+    );
+
+    if (existingIndex > -1) {
+      //បើមានហើយ បន្ថែមចំនួន (quantity) ជំនួសការបង្កើតថ្មី
+      const newItems = [...prevItems];
+      newItems[existingIndex].quantity += (product.quantity || 1);
+      return newItems;
+    } else {
+      // បើមិនទាន់មាន បន្ថែមចូលថ្មី
+      return [...prevItems, { ...product, quantity: product.quantity || 1 }];
+    }
+  });
+};
 
   // ដកទំនិញចេញ
   const removeFromCart = (productId) => {

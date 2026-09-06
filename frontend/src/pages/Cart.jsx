@@ -1,89 +1,106 @@
-import { Link } from 'react-router-dom';
-import { Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { Link } from 'react-router-dom';
+import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 
 function Cart() {
-  const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { cartItems, removeFromCart, updateQuantity } = useCart();
 
-  if (cart.length === 0) {
+  // គណនាតម្លៃសរុបទាំងអស់
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const shipping = subtotal > 0 ? 2.00 : 0; // ថ្លៃដឹកជញ្ជូនគំរូ $2
+  const total = subtotal + shipping;
+
+  if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">កន្ត្រកទំនិញរបស់អ្នកទទេស្អាត</h2>
-        <p className="text-gray-500 mb-8">សូមស្វែងរកផលិតផលដែលអ្នកពេញចិត្ត រួចបន្ថែមវាចូលទីនេះ។</p>
-        <Link to="/" className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-          <ArrowLeft size={20} /> ត្រលប់ទៅទិញទំនិញវិញ
+      <div className="container mx-auto px-4 py-20 text-center max-w-xl">
+        <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
+          <ShoppingBag size={36} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">កន្ត្រកទំនិញរបស់អ្នកទទេរ</h2>
+        <p className="text-gray-500 mb-8">ហាក់ដូចជាអ្នកមិនទាន់បានជ្រើសរើសទំនិញណាមួយចូលក្នុងកន្ត្រកនៅឡើយទេ។</p>
+        <Link to="/" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition shadow-sm">
+          ទិញទំនិញឥឡូវនេះ
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 border-l-4 border-blue-500 pl-3">
-        កន្ត្រកទំនិញរបស់ខ្ញុំ
-      </h2>
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
+        <ShoppingBag className="text-blue-600" /> កន្ត្រកទំនិញរបស់ฉัน
+      </h1>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* បញ្ជីទំនិញ */}
-        <div className="flex-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            {cart.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
-                <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* បញ្ជីទំនិញក្នុងកន្ត្រក */}
+        <div className="lg:col-span-2 space-y-4">
+          {cartItems.map((item, index) => (
+            <div key={index} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-4">
+              <img src={item.image} alt={item.name} className="w-24 h-24 object-contain bg-gray-50 rounded-xl p-2" />
+              
+              <div className="flex-grow text-center sm:text-left">
+                <h3 className="font-bold text-gray-800 text-lg">{item.name}</h3>
+                <p className="text-blue-600 font-black text-lg mb-1">${item.price.toFixed(2)}</p>
                 
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-800">{item.name}</h3>
-                  <p className="text-blue-600 font-bold mt-1">${item.price.toFixed(2)}</p>
+                {/* បង្ហាញទំហំ និង ពណ៌ដែលបានរើស */}
+                <div className="flex flex-wrap justify-center sm:justify-start gap-2 text-xs text-gray-500 mb-3">
+                  {item.selectedSize && <span className="bg-gray-100 px-2.5 py-1 rounded-md">ទំហំ: <strong className="text-gray-700">{item.selectedSize}</strong></span>}
+                  {item.selectedColor && <span className="bg-gray-100 px-2.5 py-1 rounded-md">ពណ៌: <strong className="text-gray-700">{item.selectedColor}</strong></span>}
                 </div>
 
-                <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
-                  <button onClick={() => updateQuantity(item.id, -1)} className="p-1 hover:bg-white rounded-md transition text-gray-600">
-                    <Minus size={18} />
-                  </button>
-                  <span className="w-6 text-center font-medium">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, 1)} className="p-1 hover:bg-white rounded-md transition text-gray-600">
-                    <Plus size={18} />
-                  </button>
+                {/* ប៊ូតុងកែប្រែចំនួន */}
+                <div className="flex items-center justify-center sm:justify-start gap-3">
+                  <button 
+                    onClick={() => updateQuantity(item._id || item.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
+                    className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-gray-600 transition flex items-center justify-center"
+                  >-</button>
+                  <span className="font-bold text-gray-800 w-6 text-center">{item.quantity}</span>
+                  <button 
+                    onClick={() => updateQuantity(item._id || item.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
+                    className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-gray-600 transition flex items-center justify-center"
+                  >+</button>
                 </div>
+              </div>
 
-                <div className="text-right w-24">
-                  <p className="font-bold text-gray-800">${(item.price * item.quantity).toFixed(2)}</p>
-                </div>
-
-                <button onClick={() => removeFromCart(item.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition ml-2">
-                  <Trash2 size={20} />
+              {/* តម្លៃសរុបតាមមុខទំនិញ និងប៊ូតុងលុប */}
+              <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0">
+                <p className="font-black text-gray-800 text-lg">${(item.price * item.quantity).toFixed(2)}</p>
+                <button 
+                  onClick={() => removeFromCart(item._id || item.id, item.selectedSize, item.selectedColor)}
+                  className="text-red-400 hover:text-red-600 p-2 transition mt-2"
+                >
+                  <Trash2 size={18} />
                 </button>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
-        {/* សរុបទឹកប្រាក់ */}
-        <div className="lg:w-80">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-4">សរុបការបញ្ជាទិញ</h3>
-            
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-gray-600">
-                <span>តម្លៃទំនិញសរុប:</span>
-                <span>${cartTotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>សេវាដឹកជញ្ជូន:</span>
-                <span className="text-green-600">ឥតគិតថ្លៃ</span>
-              </div>
+        {/* ផ្នែកสรุปសបញ្ជីទូទាត់ (Order Summary) */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+          <h3 className="text-xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-100">សង្ខេបការបញ្ជាទិញ</h3>
+          
+          <div className="space-y-3 mb-6 text-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>តម្លៃទំនិញសរុប</span>
+              <span className="font-semibold text-gray-800">${subtotal.toFixed(2)}</span>
             </div>
-
-            <div className="flex justify-between items-center mb-6 pt-4 border-t">
-              <span className="font-bold text-gray-800">សរុបត្រូវបង់:</span>
-              <span className="text-2xl font-bold text-blue-600">${cartTotal.toFixed(2)}</span>
+            <div className="flex justify-between text-gray-600">
+              <span>សេវាដឹកជញ្ជូន</span>
+              <span className="font-semibold text-gray-800">${shipping.toFixed(2)}</span>
             </div>
-
-            // ដូរទៅជាកូដនេះវិញ:
-            <Link to="/checkout" className="block text-center w-full bg-blue-600 text-white font-medium py-3 rounded-lg hover:bg-blue-700 transition">
-              បន្តទៅការទូទាត់ប្រាក់
-            </Link>
+            <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-bold text-gray-800">
+              <span>ទឹកប្រាក់ត្រូវបង់សរុប</span>
+              <span className="text-blue-600 text-xl">${total.toFixed(2)}</span>
+            </div>
           </div>
+
+          <Link 
+            to="/checkout" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow-md"
+          >
+            បន្តទៅកាន់ការទូទាត់ <ArrowRight size={18} />
+          </Link>
         </div>
       </div>
     </div>
