@@ -14,7 +14,8 @@ function Admin() {
   const [countInStock, setCountInStock] = useState('');
   const [category, setCategory] = useState('general');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
+  // ផ្លាស់ប្តូរ State រូបភាព
+  const [imageFile, setImageFile] = useState(null);
 
   // Form states for changing password
   const [oldPassword, setOldPassword] = useState('');
@@ -108,14 +109,47 @@ function Admin() {
     e.preventDefault();
     const token = localStorage.getItem('adminToken');
     try {
+      let imageUrl = 'https://placehold.co/400x400?text=Product';
+
+      // ១. បើមានការជ្រើសរើសរូបភាព ត្រូវ Upload ទៅកាន់ Server សិន
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        const uploadRes = await fetch('https://v-cart-backend.onrender.com/api/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        const uploadData = await uploadRes.json();
+        if (uploadRes.ok && uploadData.imageUrl) {
+          imageUrl = uploadData.imageUrl;
+        } else {
+          alert(uploadData.message || 'បរាជ័យក្នុងការ Upload រូបភាព');
+          return;
+        }
+      }
+
+      // ២. បញ្ជូនទិន្នន័យទំនិញរួមជាមួយ URL រូបភាពដែលបាន Upload រួច
       const res = await fetch('https://v-cart-backend.onrender.com/api/products', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name, price: Number(price), countInStock: Number(countInStock), category, description, image: image || 'https://placehold.co/400x400?text=Product' })
+        body: JSON.stringify({ 
+          name, 
+          price: Number(price), 
+          countInStock: Number(countInStock), 
+          category, 
+          description, 
+          image: imageUrl 
+        })
       });
+      
       const data = await res.json();
       if (data.success) {
         alert('បន្ថែមទំនិញជោគជ័យ!');
@@ -125,6 +159,7 @@ function Admin() {
       }
     } catch (err) {
       console.error(err);
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
     }
   };
 
@@ -179,8 +214,14 @@ function Admin() {
               <input type="number" value={countInStock} onChange={e => setCountInStock(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="0" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">តំណភ្ជាប់រូបភាព (Image URL)</label>
-              <input type="text" value={image} onChange={e => setImage(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+              <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពទំនិញ (ជ្រើសរើសពីកុំព្យូទ័រ)</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={e => setImageFile(e.target.files[0])} 
+                required
+                className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">បរិយាយ</label>
