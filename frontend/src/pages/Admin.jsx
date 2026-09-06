@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, LogOut, Lock } from 'lucide-react';
+import { Trash2, LogOut, Lock, Edit } from 'lucide-react';
 
 function Admin() {
   const navigate = useNavigate();
@@ -8,18 +8,18 @@ function Admin() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Form states for adding product
+  // Form states
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [countInStock, setCountInStock] = useState('');
   const [category, setCategory] = useState('general');
   const [description, setDescription] = useState('');
-  // ផ្លាស់ប្តូរ State រូបភាព
   const [imageFile, setImageFile] = useState(null);
   const [sizes, setSizes] = useState('S, M, L, XL');
   const [colors, setColors] = useState('Red, Blue, Black');
-
-  // Form states for changing password
+  
+  // Edit & Password states
+  const [editingId, setEditingId] = useState(null);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
@@ -83,7 +83,7 @@ function Admin() {
       }
     } catch (err) {
       console.error(err);
-      alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
     }
   };
 
@@ -107,22 +107,30 @@ function Admin() {
     }
   };
 
+  const handleEditClick = (product) => {
+    setEditingId(product._id);
+    setName(product.name);
+    setPrice(product.price.toString());
+    setCountInStock(product.countInStock.toString());
+    setCategory(product.category || 'general');
+    setDescription(product.description || '');
+    setSizes(product.sizes ? product.sizes.join(', ') : '');
+    setColors(product.colors ? product.colors.join(', ') : '');
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('adminToken');
     try {
       let imageUrl = 'https://placehold.co/400x400?text=Product';
 
-      // ១. បើមានការជ្រើសរើសរូបភាព ត្រូវ Upload ទៅកាន់ Server សិន
       if (imageFile) {
         const formData = new FormData();
         formData.append('image', imageFile);
 
         const uploadRes = await fetch('https://v-cart-backend.onrender.com/api/upload', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Authorization': `Bearer ${token}` },
           body: formData
         });
         
@@ -135,9 +143,14 @@ function Admin() {
         }
       }
 
-      // ២. បញ្ជូនទិន្នន័យទំនិញរួមជាមួយ URL រូបភាពដែលបាន Upload រួច
-      const res = await fetch('https://v-cart-backend.onrender.com/api/products', {
-        method: 'POST',
+      const url = editingId 
+        ? `https://v-cart-backend.onrender.com/api/products/${editingId}`
+        : 'https://v-cart-backend.onrender.com/api/products';
+      
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -149,35 +162,22 @@ function Admin() {
           category, 
           description, 
           image: imageUrl,
-          sizes: sizes.split(',').map(s => s.trim()), // បំបែកជា Array
-          colors: colors.split(',').map(c => c.trim()) // បំបែកជា Array
+          sizes: sizes.split(',').map(s => s.trim()),
+          colors: colors.split(',').map(c => c.trim())
         })
       });
       
       const data = await res.json();
       if (data.success) {
-        alert('បន្ថែមទំនិញជោគជ័យ!');
+        alert(editingId ? 'កែប្រែទំនិញជោគជ័យ!' : 'បន្ថែមទំនិញជោគជ័យ!');
         window.location.reload();
       } else {
-        alert('បរាជ័យក្នុងការបន្ថែមទំនិញ');
+        alert('បរាជ័យក្នុងការរក្សាទុកទំនិញ');
       }
     } catch (err) {
       console.error(err);
       alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
     }
-  };
-
-  const [editingId, setEditingId] = useState(null);
-
-  const handleEditClick = (product) => {
-    setEditingId(product._id);
-    setName(product.name);
-    setPrice(product.price.toString());
-    setCountInStock(product.countInStock.toString());
-    setCategory(product.category || 'general');
-    setDescription(product.description || '');
-    setSizes(product.sizes ? product.sizes.join(', ') : '');
-    setColors(product.colors ? product.colors.join(', ') : '');
   };
 
   const handleDeleteProduct = async (id) => {
@@ -214,9 +214,10 @@ function Admin() {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        {/* បន្ថែមទំនិញថ្មី */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit">
-          <h2 className="text-lg font-bold mb-4 text-gray-800">បន្ថែមទំនិញថ្មីក្នុងស្តុក</h2>
+          <h2 className="text-lg font-bold mb-4 text-gray-800">
+            {editingId ? 'កែប្រែព័ត៌មានទំនិញ' : 'បន្ថែមទំនិញថ្មីក្នុងស្តុក'}
+          </h2>
           <form onSubmit={handleAddProduct} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះទំនិញ</label>
@@ -232,16 +233,10 @@ function Admin() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពទំនិញ (ជ្រើសរើសពីកុំព្យូទ័រ)</label>
-              <input 
-                type="file" 
-                accept="image/*"
-                onChange={e => setImageFile(e.target.files[0])} 
-                required
-                className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
-              />
+              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} className="w-full border px-3 py-2 rounded-lg outline-none text-sm file:mr-4 file:py-1 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ទំហំ (Sizes - 1,2,3 ឬ S,M,L)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ទំហំ (Sizes)</label>
               <input type="text" value={sizes} onChange={e => setSizes(e.target.value)} className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="S, M, L, XL" />
             </div>
             <div>
@@ -253,11 +248,15 @@ function Admin() {
               <textarea value={description} onChange={e => setDescription(e.target.value)} rows="2" className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="បរិយាយពីទំនិញ..."></textarea>
             </div>
             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition">
-              បន្ថែមចូលស្តុក
+              {editingId ? 'រក្សាទុកការកែប្រែ' : 'បន្ថែមចូលស្តុក'}
             </button>
+            {editingId && (
+              <button type="button" onClick={() => { setEditingId(null); setName(''); setPrice(''); setCountInStock(''); setDescription(''); }} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-xl transition mt-2">
+                បោះបង់ការកែប្រែ
+              </button>
+            )}
           </form>
 
-          {/* ផ្នែកប្តូរលេខសម្ងាត់ */}
           <div className="mt-8 pt-6 border-t border-gray-100">
             <h2 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
               <Lock size={18} /> ប្តូរលេខសម្ងាត់ Admin
@@ -272,13 +271,12 @@ function Admin() {
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
               </div>
               <button type="submit" className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl transition">
-                រក្សាទុករលេខសម្ងាត់ថ្មី
+                រក្សាទុករหัสសម្ងាត់ថ្មី
               </button>
             </form>
           </div>
         </div>
 
-        {/* គ្រប់គ្រងស្តុកទំនិញ */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit">
           <h2 className="text-lg font-bold mb-4 text-gray-800">គ្រប់គ្រងស្តុកទំនិញ ({products.length})</h2>
           <div className="overflow-x-auto max-h-[450px]">
@@ -300,14 +298,14 @@ function Admin() {
                     <td className="py-3 px-2">${p.price.toFixed(2)}</td>
                     <td className="py-3 px-2">{p.countInStock}</td>
                     <td className="py-3 px-2 text-right">
-                      <td className="py-3 px-2 text-right flex items-center justify-end gap-2">
-                      <button onClick={() => handleEditClick(p)} className="text-blue-500 hover:text-blue-700 p-1">
-                        <Edit size={18} />
-                      </button>
-                      <button onClick={() => handleDeleteProduct(p._id)} className="text-red-500 hover:text-red-700 p-1">
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => handleEditClick(p)} className="text-blue-500 hover:text-blue-700 p-1">
+                          <Edit size={18} />
+                        </button>
+                        <button onClick={() => handleDeleteProduct(p._id)} className="text-red-500 hover:text-red-700 p-1">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -317,7 +315,6 @@ function Admin() {
         </div>
       </div>
 
-      {/* ប្រវត្តិការបញ្ជាទិញ */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
         <h2 className="text-lg font-bold mb-4 text-gray-800">ប្រវត្តិការបញ្ជាទិញរបស់អតិថិជន ({orders.length})</h2>
         <div className="overflow-x-auto">
