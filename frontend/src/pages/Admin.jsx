@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { Trash2, LogOut, Lock } from 'lucide-react';
 
 function Admin() {
   const navigate = useNavigate();
@@ -15,6 +15,10 @@ function Admin() {
   const [category, setCategory] = useState('general');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
+
+  // Form states for changing password
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -48,6 +52,37 @@ function Admin() {
 
     fetchData();
   }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    navigate('/login');
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch('https://v-cart-backend.onrender.com/api/change-password', {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('ប្តូរលេខសម្ងាត់បានជោគជ័យ!');
+        setOldPassword('');
+        setNewPassword('');
+      } else {
+        alert(data.message || 'បរាជ័យក្នុងការប្តូរលេខសម្ងាត់');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
+    }
+  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -116,9 +151,18 @@ function Admin() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">ផ្ទាំងគ្រប់គ្រងស្តុក និងការបញ្ជាទិញ (Admin Dashboard)</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">ផ្ទាំងគ្រប់គ្រងស្តុក និងការបញ្ជាទិញ (Admin Dashboard)</h1>
+        <button 
+          onClick={handleLogout} 
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition shadow-sm font-medium"
+        >
+          <LogOut size={18} /> ចាកចេញ (Logout)
+        </button>
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        {/* បន្ថែមទំនិញថ្មី */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit">
           <h2 className="text-lg font-bold mb-4 text-gray-800">បន្ថែមទំនិញថ្មីក្នុងស្តុក</h2>
           <form onSubmit={handleAddProduct} className="space-y-4">
@@ -146,9 +190,30 @@ function Admin() {
               បន្ថែមចូលស្តុក
             </button>
           </form>
+
+          {/* ផ្នែកប្តូរលេខសម្ងាត់ */}
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <h2 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+              <Lock size={18} /> ប្តូរលេខសម្ងាត់ Admin
+            </h2>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">លេខសម្ងាត់ចាស់</label>
+                <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">លេខសម្ងាត់ថ្មី</label>
+                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
+              </div>
+              <button type="submit" className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl transition">
+                រក្សាទុករหัสសម្ងាត់ថ្មី
+              </button>
+            </form>
+          </div>
         </div>
 
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        {/* គ្រប់គ្រងស្តុកទំនិញ */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit">
           <h2 className="text-lg font-bold mb-4 text-gray-800">គ្រប់គ្រងស្តុកទំនិញ ({products.length})</h2>
           <div className="overflow-x-auto max-h-[450px]">
             <table className="w-full text-left border-collapse">
@@ -181,6 +246,7 @@ function Admin() {
         </div>
       </div>
 
+      {/* ប្រវត្តិការបញ្ជាទិញ */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
         <h2 className="text-lg font-bold mb-4 text-gray-800">ប្រវត្តិការបញ្ជាទិញរបស់អតិថិជន ({orders.length})</h2>
         <div className="overflow-x-auto">

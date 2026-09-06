@@ -73,6 +73,24 @@ app.get('/api/setup-admin', async (req, res) => {
   res.json({ message: 'បង្កើតគណនីជោគជ័យ! Username: admin, Password: admin123' });
 });
 
+// API សម្រាប់ប្តូរលេខសម្ងាត់ Admin
+app.put('/api/change-password', protect, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'រកមិនឃើញគណនី' });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({ success: false, message: 'លេខសម្ងាត់ចាស់មិនត្រឹមត្រូវ' });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ success: true, message: 'ប្តូរលេខសម្ងាត់បានជោគជ័យ' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
