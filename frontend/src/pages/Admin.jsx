@@ -271,7 +271,7 @@ function Admin() {
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full border px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" />
               </div>
               <button type="submit" className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 rounded-xl transition">
-                រក្សាទុករหัสសម្ងាត់ថ្មី
+                រក្សាទុករលេខសម្ងាត់ថ្មី
               </button>
             </form>
           </div>
