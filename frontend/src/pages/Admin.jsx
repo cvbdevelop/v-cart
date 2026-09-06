@@ -167,6 +167,19 @@ function Admin() {
     }
   };
 
+  const [editingId, setEditingId] = useState(null);
+
+  const handleEditClick = (product) => {
+    setEditingId(product._id);
+    setName(product.name);
+    setPrice(product.price.toString());
+    setCountInStock(product.countInStock.toString());
+    setCategory(product.category || 'general');
+    setDescription(product.description || '');
+    setSizes(product.sizes ? product.sizes.join(', ') : '');
+    setColors(product.colors ? product.colors.join(', ') : '');
+  };
+
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?')) return;
     const token = localStorage.getItem('adminToken');
@@ -287,9 +300,14 @@ function Admin() {
                     <td className="py-3 px-2">${p.price.toFixed(2)}</td>
                     <td className="py-3 px-2">{p.countInStock}</td>
                     <td className="py-3 px-2 text-right">
+                      <td className="py-3 px-2 text-right flex items-center justify-end gap-2">
+                      <button onClick={() => handleEditClick(p)} className="text-blue-500 hover:text-blue-700 p-1">
+                        <Edit size={18} />
+                      </button>
                       <button onClick={() => handleDeleteProduct(p._id)} className="text-red-500 hover:text-red-700 p-1">
                         <Trash2 size={18} />
                       </button>
+                    </td>
                     </td>
                   </tr>
                 ))}
