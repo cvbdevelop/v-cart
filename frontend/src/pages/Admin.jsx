@@ -8,7 +8,6 @@ function Admin() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imageFile, setImageFile] = useState(null);
   const [existingImage, setExistingImage] = useState(''); // បន្ថែមថ្មី
 
   // Form states
