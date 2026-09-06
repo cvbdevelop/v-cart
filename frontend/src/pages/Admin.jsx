@@ -74,12 +74,14 @@ function Admin() {
       console.error('Error:', error);
     }
   };
-
+  // 1. ត្រួតពិនិត្យ Token
   useEffect(() => {
     if (!token) {
       navigate('/login');
     }
   }, [token, navigate]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         // ទាញយកទិន្នន័យទំនិញ និង ប្រវត្តិបញ្ជាទិញ ព្រមគ្នា
