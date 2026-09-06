@@ -1,117 +1,86 @@
-import { useCart } from '../contexts/CartContext';
+import { useContext } from 'react';
+import { CartContext } from '../contexts/CartContext';
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 function Cart() {
-  // ទាញយកទិន្នន័យ (ហៅទាំង cartItems និង cart ដើម្បីការពារការខុសឈ្មោះអថេរក្នុង Context)
-  const { cartItems, cart, removeFromCart, updateQuantity } = useCart();
+  // កូដការពារសុវត្ថិភាព
+  const context = useContext(CartContext) || {};
+  const cart = context.cart || [];
+  const updateQuantity = context.updateQuantity || (() => {});
+  const removeFromCart = context.removeFromCart || (() => {});
 
-  // បង្កើតទិន្នន័យបណ្តោះអាសន្ន ដើម្បីការពារកុំឱ្យ Error ផ្ទាំងសបើទិន្នន័យ undefined
-  const currentCart = cartItems || cart || [];
+  // គណនាតម្លៃសរុប (ការពារ Error)
+  const totalAmount = cart.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
-  // គណនាតម្លៃសរុបទាំងអស់ (ប្រើ currentCart ជំនួស)
-  const subtotal = currentCart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-  const shipping = subtotal > 0 ? 2.00 : 0;
-  const total = subtotal + shipping;
-
-  if (currentCart.length === 0) {
+  if (cart.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-20 text-center max-w-xl">
-        <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
-          <ShoppingBag size={36} />
+      <div className="container mx-auto px-4 py-16 text-center max-w-md">
+        <div className="bg-gray-50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+          <ShoppingBag size={40} className="text-gray-300" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">កន្ត្រកទំនិញរបស់អ្នកទទេរ</h2>
-        <p className="text-gray-500 mb-8">ហាក់ដូចជាអ្នកមិនទាន់បានជ្រើសរើសទំនិញណាមួយចូលក្នុងកន្ត្រកនៅឡើយទេ។</p>
-        <Link to="/" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition shadow-sm">
-          ទិញទំនិញឥឡូវនេះ
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">កន្ត្រករបស់អ្នកទទេ</h2>
+        <p className="text-gray-500 mb-8">ហាក់ដូចជាអ្នកមិនទាន់បានជ្រើសរើសទំនិញណាមួយនៅឡើយទេ។</p>
+        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition flex items-center justify-center gap-2">
+          ទៅកាន់ទំព័រដើម <ArrowRight size={18} />
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-        <ShoppingBag className="text-blue-600" /> កន្ត្រកទំនិញរបស់ខ្ញុំ
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <h1 className="text-2xl font-bold mb-8 text-gray-800 flex items-center gap-2">
+        កន្ត្រកទំនិញ <span className="text-lg font-normal text-gray-500">({cart.length} មុខ)</span>
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* បញ្ជីទំនិញក្នុងកន្ត្រក */}
         <div className="lg:col-span-2 space-y-4">
-          {currentCart.map((item, index) => (
-            <div key={index} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-4">
-              <img src={item.image} alt={item.name} className="w-24 h-24 object-contain bg-gray-50 rounded-xl p-2" />
-              
-              <div className="flex-grow text-center sm:text-left">
+          {cart.map((item) => (
+            <div key={item._id || item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex gap-4 items-center relative">
+              <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-xl bg-gray-50" />
+              <div className="flex-grow">
                 <h3 className="font-bold text-gray-800 text-lg">{item.name}</h3>
-                <p className="text-blue-600 font-black text-lg mb-1">${item.price.toFixed(2)}</p>
+                <p className="text-blue-600 font-bold mt-1">${item.price.toFixed(2)}</p>
                 
-                {/* បង្ហាញទំហំ និង ពណ៌ដែលបានរើស */}
-                <div className="flex flex-wrap justify-center sm:justify-start gap-2 text-xs text-gray-500 mb-3">
-                  {item.selectedSize && <span className="bg-gray-100 px-2.5 py-1 rounded-md">ទំហំ: <strong className="text-gray-700">{item.selectedSize}</strong></span>}
-                  {item.selectedColor && <span className="bg-gray-100 px-2.5 py-1 rounded-md">ពណ៌: <strong className="text-gray-700">{item.selectedColor}</strong></span>}
-                </div>
-
-                {/* ប៊ូតុងកែប្រែចំនួន (ការពារករណីដែលមិនទាន់មានមុខងារ updateQuantity ក្នុង Context) */}
-                <div className="flex items-center justify-center sm:justify-start gap-3">
-                  <button 
-                    onClick={() => updateQuantity && updateQuantity(item._id || item.id, Math.max(1, (item.quantity || 1) - 1), item.selectedSize, item.selectedColor)}
-                    className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-gray-600 transition flex items-center justify-center"
-                  >-</button>
-                  <span className="font-bold text-gray-800 w-6 text-center">{item.quantity || 1}</span>
-                  <button 
-                    onClick={() => updateQuantity && updateQuantity(item._id || item.id, (item.quantity || 1) + 1, item.selectedSize, item.selectedColor)}
-                    className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-gray-600 transition flex items-center justify-center"
-                  >+</button>
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="flex items-center bg-gray-50 rounded-lg border">
+                    <button onClick={() => updateQuantity(item._id || item.id, (item.quantity || 1) - 1)} className="p-2 hover:bg-gray-100 text-gray-600 transition rounded-l-lg">
+                      <Minus size={16} />
+                    </button>
+                    <span className="w-10 text-center font-medium text-sm">{item.quantity || 1}</span>
+                    <button onClick={() => updateQuantity(item._id || item.id, (item.quantity || 1) + 1)} className="p-2 hover:bg-gray-100 text-gray-600 transition rounded-r-lg">
+                      <Plus size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              {/* តម្លៃសរុបតាមមុខទំនិញ និងប៊ូតុងលុប */}
-              <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0">
-                <p className="font-black text-gray-800 text-lg">${(item.price * (item.quantity || 1)).toFixed(2)}</p>
-                <button 
-                  onClick={() => removeFromCart && removeFromCart(item._id || item.id, item.selectedSize, item.selectedColor)}
-                  className="text-red-400 hover:text-red-600 p-2 transition mt-2"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+              <button onClick={() => removeFromCart(item._id || item.id)} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition p-2 bg-gray-50 hover:bg-red-50 rounded-full">
+                <Trash2 size={18} />
+              </button>
             </div>
           ))}
         </div>
 
-        {/* ផ្នែកសង្ខេបការបញ្ជាទិញ (Order Summary) */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-          <h3 className="text-xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-100">សង្ខេបការបញ្ជាទិញ</h3>
-          
-          <div className="space-y-3 mb-6 text-sm">
-            <div className="flex justify-between text-gray-600">
-              <span>តម្លៃទំនិញសរុប</span>
-              <span className="font-semibold text-gray-800">${subtotal.toFixed(2)}</span>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit sticky top-24">
+          <h2 className="text-lg font-bold text-gray-800 mb-4">សង្ខេបការបញ្ជាទិញ</h2>
+          <div className="space-y-3 text-sm text-gray-600 mb-4 border-b pb-4">
+            <div className="flex justify-between">
+              <span>ទំនិញសរុប៖</span>
+              <span>{totalItems} មុខ</span>
             </div>
-            <div className="flex justify-between text-gray-600">
-              <span>សេវាដឹកជញ្ជូន</span>
-              <span className="font-semibold text-gray-800">${shipping.toFixed(2)}</span>
-            </div>
-            <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-bold text-gray-800">
-              <span>ទឹកប្រាក់ត្រូវបង់សរុប</span>
-              <span className="text-blue-600 text-xl">${total.toFixed(2)}</span>
+            <div className="flex justify-between">
+              <span>តម្លៃដើម៖</span>
+              <span>${totalAmount.toFixed(2)}</span>
             </div>
           </div>
-
-          <Link 
-            to="/checkout" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow-md"
-          >
-            បន្តទៅកាន់ការទូទាត់ <ArrowRight size={18} />
-          </Link>
-          
-          {/* ប៊ូតុងថ្មី សម្រាប់បន្តការទិញទំនិញ (បន្ថែមថ្មីនៅទីនេះ) */}
-          <Link 
-            to="/" 
-            className="w-full mt-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm"
-          >
-            <ArrowLeft size={18} /> បន្តការទិញទំនិញ
+          <div className="flex justify-between text-lg font-bold text-gray-800 mb-6">
+            <span>សរុបត្រូវបង់៖</span>
+            <span className="text-blue-600">${totalAmount.toFixed(2)}</span>
+          </div>
+          <Link to="/checkout" className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+            បន្តទៅទូទាត់ប្រាក់ <ArrowRight size={18} />
           </Link>
         </div>
       </div>
