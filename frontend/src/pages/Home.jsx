@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom';
 // ១. បន្ថែមការ Import toast នៅខាងលើគេ
-import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { Search } from 'lucide-react';
 
 function Home() {
-  const { addToCart } = useCart();
+  const { addToCart } = useCart(); 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,13 +38,16 @@ function Home() {
 
   // បន្ថែមមុខងារនេះនៅពីលើ if (loading)
   const handleAddToCart = (product) => {
-    addToCart(product);
-    toast.success(`បានបន្ថែម ${product.name} ចូលកន្ត្រក!`);
+    // កំណត់ទំហំ និងពណ៌លំនាំដើម បើទំនិញនោះមានជម្រើស
+    const productToAdd = {
+      ...product,
+      selectedSize: product.sizes && product.sizes.length > 0 ? product.sizes[0] : null,
+      selectedColor: product.colors && product.colors.length > 0 ? product.colors[0] : null
+    };
+    
+    addToCart(productToAdd);
+    alert(`បានបន្ថែម ${product.name} ចូលកន្ត្រក!`);
   };
-
-  if (loading) {
-    return <div className="text-center py-20 text-xl font-bold text-gray-500">កំពុងទាញយកទិន្នន័យ...</div>;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
