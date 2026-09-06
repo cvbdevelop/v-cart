@@ -289,6 +289,17 @@ app.get('/api/orders/track/:phone', async (req, res) => {
   }
 });
 
+// API សម្រាប់លុបការបញ្ជាទិញ (Admin)
+app.delete('/api/orders/:id', protect, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    await Order.findByIdAndDelete(orderId);
+    res.json({ success: true, message: 'លុបការបញ្ជាទិញជោគជ័យ' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'បរាជ័យក្នុងការលុបការបញ្ជាទិញ' });
+  }
+});
+
 // ==================== CLOUDINARY ====================
 
 cloudinary.config({

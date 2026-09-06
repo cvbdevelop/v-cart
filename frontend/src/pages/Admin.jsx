@@ -109,6 +109,29 @@ function Admin() {
     }
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('តើអ្នកពិតជាចង់លុបប្រវត្តិការបញ្ជាទិញនេះមែនទេ?')) return;
+    
+    const token = localStorage.getItem('adminToken');
+    try {
+      const response = await fetch(`https://v-cart-backend.onrender.com/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        // ដក Order ដែលលុបចេញពី State ដោយមិនបាច់ Refresh ទំព័រ
+        setOrders(orders.filter(order => order._id !== orderId));
+      } else {
+        alert('បរាជ័យក្នុងការលុប');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+    }
+  };
+
   const handleEditClick = (product) => {
     setEditingId(product._id);
     setName(product.name);
@@ -375,6 +398,7 @@ function Admin() {
                 <th className="pb-3 px-4">ទំនិញ</th>
                 <th className="pb-3 px-4">សរុប</th>
                 <th className="pb-3 px-4">ស្ថានភាព</th>
+                <th className="pb-3 px-4 text-center">សកម្មភាព</th> {/* បន្ថែមជួរនេះ */}
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -409,6 +433,19 @@ function Admin() {
                         <option value="Delivered">Delivered (បានប្រគល់)</option>
                       </select>
                     </td>
+
+                    {/* បន្ថែមកូដប៊ូតុងលុបនៅត្រង់នេះ */}
+                    <td className="py-3 px-4 text-center">
+                      <button 
+                        onClick={() => handleDeleteOrder(order._id)} 
+                        className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition"
+                        title="លុបការបញ្ជាទិញនេះ"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                    {/* បញ្ចប់ការបន្ថែម */}
+                  </tr>    
                   </tr>
                 ))
               )}
