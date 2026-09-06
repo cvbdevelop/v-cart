@@ -1,6 +1,6 @@
 import { useCart } from '../contexts/CartContext';
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowRight, ArrowLeft } from 'lucide-react';
 
 function Cart() {
   // ទាញយកទិន្នន័យ (ហៅទាំង cartItems និង cart ដើម្បីការពារការខុសឈ្មោះអថេរក្នុង Context)
@@ -104,6 +104,21 @@ function Cart() {
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow-md"
           >
             បន្តទៅកាន់ការទូទាត់ <ArrowRight size={18} />
+          </Link>
+          {/* ប៊ូតុងបន្តទៅកាន់ការទូទាត់ (កូដចាស់មានស្រាប់) */}
+          <Link 
+            to="/checkout" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow-md"
+          >
+            បន្តទៅកាន់ការទូទាត់ <ArrowRight size={18} />
+          </Link>
+
+          {/* ប៊ូតុងថ្មី សម្រាប់បន្តការទិញទំនិញ (បន្ថែមថ្មីនៅទីនេះ) */}
+          <Link 
+            to="/" 
+            className="w-full mt-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm"
+          >
+            <ArrowLeft size={18} /> បន្តការទិញទំនិញ
           </Link>
         </div>
       </div>
