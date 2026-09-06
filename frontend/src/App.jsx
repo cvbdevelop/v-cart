@@ -1,8 +1,8 @@
+import Checkout from './pages/Checkout';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import { CartProvider } from './contexts/CartContext';
