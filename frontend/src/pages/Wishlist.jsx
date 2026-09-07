@@ -3,7 +3,9 @@ import { useWishlist } from '../contexts/WishlistContext';
 import { Heart, Trash2 } from 'lucide-react';
 
 function Wishlist() {
-  const { wishlist, toggleWishlist } = useWishlist() || { wishlist: [] };
+  const wishlistContext = useWishlist() || {};
+  const wishlist = wishlistContext.wishlist || [];
+  const toggleWishlist = wishlistContext.toggleWishlist || (() => {});
 
   if (wishlist.length === 0) {
     return (

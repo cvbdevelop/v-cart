@@ -1,35 +1,37 @@
-import Checkout from './pages/Checkout';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Import ទំព័រនិងសមាសធាតុ (Components & Pages)
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import Cart from './pages/Cart';
-import Login from './pages/Login';
-import Admin from './pages/Admin';
-import OrderTracking from './pages/OrderTracking'; // <--- បន្ថែម Import ទំព័រតាមដាន
-import { CartProvider } from './contexts/CartContext';
-import { Toaster } from 'react-hot-toast';
 import ProductDetail from './pages/ProductDetail';
-import Footer from './components/Footer';
-// ផ្នែកខាងលើ៖ បន្ថែមការ Import ទាំង២នេះ
-import { WishlistProvider } from './contexts/WishlistContext';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderTracking from './pages/OrderTracking';
+import Admin from './pages/Admin';
+import Login from './pages/Login';
 import Wishlist from './pages/Wishlist';
 
-// នៅក្នុងមុខងារ return () សូមរុំ WishlistProvider ពីក្រៅ និងបន្ថែម Route:
+// Import ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យ (Contexts)
+import { CartProvider } from './contexts/CartContext';
+import { WishlistProvider } from './contexts/WishlistContext';
+
 function App() {
   return (
     <CartProvider>
-      <WishlistProvider> {/* រុំពីក្រៅ Navbar និង Routes */}
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/tracking" element={<OrderTracking />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/wishlist" element={<Wishlist />} /> {/* បន្ថែម Route នេះ */}
-        </Routes>
+      <WishlistProvider>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/tracking" element={<OrderTracking />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+          </Routes>
+        </Router>
       </WishlistProvider>
     </CartProvider>
   );
