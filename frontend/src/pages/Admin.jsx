@@ -215,18 +215,30 @@ function Admin() {
 
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?')) return;
+    
     const token = localStorage.getItem('adminToken');
     try {
       const res = await fetch(`https://v-cart-backend.onrender.com/api/products/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        }
       });
+      
       const data = await res.json();
+      
       if (data.success) {
+        alert('បានលុបទំនិញចេញពីស្តុកជោគជ័យ!');
+        // លុបទំនិញនោះចេញពីតារាងភ្លាមៗដោយមិនបាច់ Refresh
         setProducts(products.filter(p => p._id !== id));
+      } else {
+        // លោតសារប្រាប់ប្រសិនបើលុបមិនបាន (ឧ. Token ផុតកំណត់)
+        alert(data.message || 'បរាជ័យក្នុងការលុបទំនិញ');
       }
     } catch (err) {
       console.error(err);
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server សូមសាកល្បងម្ដងទៀត។');
     }
   };
 
