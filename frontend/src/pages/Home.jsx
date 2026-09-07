@@ -12,6 +12,16 @@ function Home() {
   const toggleWishlist = wishlistContext.toggleWishlist || (() => {});
   const isInWishlist = wishlistContext.isInWishlist || (() => false);
 
+  // បង្កើតបញ្ជីប្រភេទទំនិញជាភាសាខ្មែរ
+  const categories = [
+    { id: 'all', name: 'ទាំងអស់' },
+    { id: 'clothing', name: 'សម្លៀកបំពាក់' },
+    { id: 'shoes', name: 'ស្បែកជើង' },
+    { id: 'electronics', name: 'អេឡិចត្រូនិច' },
+    { id: 'accessories', name: 'គ្រឿងតុបតែង' },
+    { id: 'general', name: 'ទូទៅ' }
+  ];
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -29,15 +39,16 @@ function Home() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* ម៉ឺនុយជ្រើសរើសប្រភេទទំនិញ (Categories) */}
       <div className="flex justify-end mb-8">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {['all', 'clothing', 'shoes', 'electronics', 'accessories', 'general'].map(cat => (
+          {categories.map(cat => (
             <button 
-              key={cat} 
-              onClick={() => setActiveCategory(cat)} 
-              className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === cat ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+              key={cat.id} 
+              onClick={() => setActiveCategory(cat.id)} 
+              className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition ${activeCategory === cat.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
             >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              {cat.name}
             </button>
           ))}
         </div>
@@ -76,6 +87,12 @@ function Home() {
           </div>
         ))}
       </div>
+
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-12 text-gray-500">
+          មិនមានទំនិញក្នុងប្រភេទនេះទេ។
+        </div>
+      )}
     </div>
   );
 }
