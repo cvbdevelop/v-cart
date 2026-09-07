@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Import ទំព័រនិងសមាសធាតុ (Components & Pages)
 import Navbar from './components/Navbar';
+import Footer from './components/Footer'; // ១. បន្ថែមការ Import Footer នៅទីនេះ
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
@@ -20,17 +21,27 @@ function App() {
     <CartProvider>
       <WishlistProvider>
         <Router>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/tracking" element={<OrderTracking />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-          </Routes>
+          {/* ប្រើ flex និង min-h-screen ដើម្បីរុញ Footer ឱ្យនៅបាតក្រោមជានិច្ច ទោះទំព័រខ្លីក៏ដោយ */}
+          <div className="flex flex-col min-h-screen"> 
+            <Navbar />
+            
+            {/* ផ្នែកកណ្តាល (បង្ហាញទំព័រផ្សេងៗ) */}
+            <main className="flex-grow">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/tracking" element={<OrderTracking />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+              </Routes>
+            </main>
+
+            {/* ២. ដាក់ Footer នៅផ្នែកខាងក្រោមគេ */}
+            <Footer />
+          </div>
         </Router>
       </WishlistProvider>
     </CartProvider>
