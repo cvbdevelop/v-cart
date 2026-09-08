@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Package, Trash2, Plus, Save, Edit, X, UploadCloud, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // បន្ថែម useNavigate សម្រាប់បញ្ជូនទៅទំព័រផ្សេង
+import { Package, Trash2, Plus, Save, Edit, X, UploadCloud, Loader2, LogOut } from 'lucide-react'; // បន្ថែម Icon LogOut
 
 function Admin() {
+  const navigate = useNavigate(); // ប្រកាសប្រើប្រាស់ navigate
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   
-  // State សម្រាប់កំណត់ពេលកំពុង Upload រូបភាព
   const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -38,7 +39,6 @@ function Admin() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ==================== មុខងារ UPLOAD ទៅ CLOUDINARY ====================
   const uploadImageToServer = async (file) => {
     const uploadData = new FormData();
     uploadData.append('image', file);
@@ -55,7 +55,7 @@ function Admin() {
       else { alert(data.message || 'Error Uploading'); return null; }
     } catch (err) {
       console.error(err);
-      alert('មានបញ្ហាក្នុងការ Upload រូបភាពទៅកាន់ Cloudinary');
+      alert('មានបញ្ហាក្នុងការ Upload រូបភាព');
       return null;
     }
   };
@@ -83,7 +83,6 @@ function Admin() {
       setUploading(false);
     }
   };
-  // ====================================================================
 
   const handleEditClick = (product) => {
     setEditingId(product._id);
@@ -169,12 +168,30 @@ function Admin() {
     });
   };
 
+  // មុខងារសម្រាប់ ចាកចេញ (Logout)
+  const handleLogout = () => {
+    if (window.confirm('តើអ្នកពិតជាចង់ចាកចេញពីគណនី Admin មែនទេ?')) {
+      localStorage.removeItem('adminToken'); // លុបសោសម្ងាត់ចេញ
+      navigate('/'); // បញ្ជូនត្រឡប់ទៅទំព័រដើមវិញ
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="container mx-auto px-4 max-w-[1200px]">
-        <h1 className="text-2xl font-black text-gray-800 mb-8 flex items-center gap-3">
-          <Package className="text-orange-500" /> ផ្ទាំងគ្រប់គ្រងទំនិញ
-        </h1>
+        
+        {/* បន្ថែម Flexbox ដើម្បីដាក់ប៊ូតុង Logout នៅខាងស្តាំ */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-2xl font-black text-gray-800 flex items-center gap-3">
+            <Package className="text-orange-500" /> ផ្ទាំងគ្រប់គ្រងទំនិញ
+          </h1>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-bold transition shadow-sm"
+          >
+            <LogOut size={18} /> ចាកចេញ (Log Out)
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -212,7 +229,6 @@ function Admin() {
                 </div>
               </div>
 
-              {/* ប្រអប់ Upload ទៅ Cloudinary */}
               <div className="p-3 bg-gray-50 border rounded-lg">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
                   <span className="flex items-center gap-2"><UploadCloud size={16} className="text-blue-500" /> រូបភាពគោល</span>
@@ -269,7 +285,6 @@ function Admin() {
             </form>
           </div>
 
-          {/* ================= ផ្នែកខាងស្តាំ៖ តារាងទំនិញ ================= */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-800">ទំនិញក្នុងស្តុក ({products.length})</h2>
