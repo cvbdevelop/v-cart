@@ -20,8 +20,8 @@ if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
 
 dotenv.config();
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 console.log("តំណភ្ជាប់របស់ខ្ញុំគឺ:", process.env.MONGO_URI);
@@ -55,6 +55,13 @@ const productSchema = new mongoose.Schema({
   colors: { type: [String], default: [] }, // សម្រាប់ផ្ទុកពណ៌ (ឧ. Red, Blue)
   sizes: { type: [String], default: [] },  // សម្រាប់ផ្ទុកទំហំ (ឧ. S, M, L)
   storage: { type: [String], default: [] }, // សម្រាប់ផ្ទុកទំហំម៉ាស៊ីន (ឧ. 128GB, 256GB)
+  // ++++++ សូមបន្ថែមទិន្នន័យថ្មីទាំង ៥ ជួរនេះចូលទីនេះ ++++++
+  images: { type: [String], default: [] },
+  colors: { type: [String], default: [] },
+  sizes: { type: [String], default: [] },
+  storage: { type: [String], default: [] },
+  stock: { type: Number, default: 0 }
+  // ++++++++++++++++++++++++++++++++++++++++++++
 });
 const Product = mongoose.model('Product', productSchema);
 

@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Package, Trash2, Plus, Save, Edit, X } from 'lucide-react';
+import { Package, Trash2, Plus, Save, Edit, X, UploadCloud } from 'lucide-react';
 
 function Admin() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // State សម្រាប់ចំណាំថាតើយើងកំពុង "បន្ថែមថ្មី" ឬ "កែប្រែចាស់"
   const [editingId, setEditingId] = useState(null);
   
   const [formData, setFormData] = useState({
-    name: '', price: '', category: 'general', image: '', description: '',
-    images: '', colors: '', sizes: '', storage: ''
+    name: '', price: '', stock: '', category: 'general', image: '', description: '',
+    images: [], colors: '', sizes: '', storage: '' // images ប្តូរជា Array វិញ
   });
 
   const categories = [
@@ -37,30 +35,53 @@ function Admin() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // មុខងារពេលចុចប៊ូតុង "កែប្រែ" នៅលើតារាង
+  // មុខងារបំប្លែងរូបភាពទៅជា Base64 ពេល Upload
+  const handleMainImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setFormData({ ...formData, image: reader.result });
+      };
+    }
+  };
+
+  const handleExtraImagesUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    const imagePromises = files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => resolve(reader.result);
+      });
+    });
+    const base64Images = await Promise.all(imagePromises);
+    setFormData({ ...formData, images: base64Images });
+  };
+
   const handleEditClick = (product) => {
     setEditingId(product._id);
     setFormData({
       name: product.name || '',
       price: product.price || '',
+      stock: product.stock || '',
       category: product.category || 'general',
       image: product.image || '',
       description: product.description || '',
-      images: product.images ? product.images.join(', ') : '',
+      images: product.images || [],
       colors: product.colors ? product.colors.join(', ') : '',
       sizes: product.sizes ? product.sizes.join(', ') : '',
       storage: product.storage ? product.storage.join(', ') : ''
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // អូសឡើងលើទៅរកហ្វម
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // មុខងារពេលចុចបោះបង់ការកែប្រែ
   const handleCancelEdit = () => {
     setEditingId(null);
-    setFormData({ name: '', price: '', category: 'general', image: '', description: '', images: '', colors: '', sizes: '', storage: '' });
+    setFormData({ name: '', price: '', stock: '', category: 'general', image: '', description: '', images: [], colors: '', sizes: '', storage: '' });
   };
 
-  // មុខងារបញ្ជូនទិន្នន័យ (ប្រើសម្រាប់ទាំង Add ថ្មី និង Update ចាស់)
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('adminToken');
@@ -68,13 +89,12 @@ function Admin() {
     const formattedData = {
       ...formData,
       price: Number(formData.price),
-      images: formData.images ? formData.images.split(',').map(item => item.trim()).filter(Boolean) : [],
+      stock: Number(formData.stock),
       colors: formData.colors ? formData.colors.split(',').map(item => item.trim()).filter(Boolean) : [],
       sizes: formData.sizes ? formData.sizes.split(',').map(item => item.trim()).filter(Boolean) : [],
       storage: formData.storage ? formData.storage.split(',').map(item => item.trim()).filter(Boolean) : [],
     };
 
-    // បើមាន editingId មានន័យថាកំពុង Update, បើគ្មានគឺ Add ថ្មី
     const url = editingId 
       ? `https://v-cart-backend.onrender.com/api/products/${editingId}` 
       : 'https://v-cart-backend.onrender.com/api/products';
@@ -98,7 +118,7 @@ function Admin() {
       } else {
         alert(data.message || 'ប្រតិបត្តិការបរាជ័យ');
       }
-    } catch (err) { console.error(err); alert('មានបញ្ហាភ្ជាប់ទៅកាន់ Server'); }
+    } catch (err) { console.error(err); alert('មានបញ្ហាភ្ជាប់ទៅកាន់ Server (អាចមកពីរូបភាពធំពេក)'); }
   };
 
   const handleDeleteProduct = async (id) => {
@@ -125,7 +145,7 @@ function Admin() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* ================= ផ្នែកខាងឆ្វេង៖ ហ្វមបញ្ជូល/កែប្រែ ================= */}
+          {/* ================= ផ្នែកខាងឆ្វេង៖ ហ្វមបញ្ជូល ================= */}
           <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -142,27 +162,45 @@ function Admin() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះទំនិញ</label>
                 <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">តម្លៃ ($)</label>
                   <input required type="number" name="price" value={formData.price} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ប្រភេទទំនិញ</label>
-                  <select name="category" value={formData.category} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm bg-white">
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ស្តុក</label>
+                  <input required type="number" name="stock" value={formData.stock} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
+                </div>
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ប្រភេទ</label>
+                  <select name="category" value={formData.category} onChange={handleInputChange} className="w-full border px-2 py-2 rounded-lg outline-none focus:border-blue-500 text-sm bg-white">
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពគោល (Image URL)</label>
-                <input required type="text" name="image" value={formData.image} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
+              {/* ផ្នែក Upload រូបភាព */}
+              <div className="p-3 bg-gray-50 border rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <UploadCloud size={16} className="text-blue-500" /> រូបភាពគោល (Main Image)
+                </label>
+                <input type="file" accept="image/*" onChange={handleMainImageUpload} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                {formData.image && <img src={formData.image} alt="Preview" className="h-16 mt-2 rounded border shadow-sm object-cover" />}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពបន្ថែម (ក្បៀសពីគ្នា)</label>
-                <input type="text" name="images" value={formData.images} onChange={handleInputChange} placeholder="URL1, URL2" className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
+              <div className="p-3 bg-gray-50 border rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <UploadCloud size={16} className="text-orange-500" /> រូបភាពបន្ថែម (ជ្រើសរើសបានច្រើន)
+                </label>
+                <input type="file" accept="image/*" multiple onChange={handleExtraImagesUpload} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+                {formData.images.length > 0 && (
+                  <div className="flex gap-2 mt-2 overflow-x-auto">
+                    {formData.images.map((img, idx) => (
+                      <img key={idx} src={img} alt="Preview" className="h-12 w-12 rounded border shadow-sm object-cover flex-shrink-0" />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -210,7 +248,7 @@ function Admin() {
                     <tr>
                       <th className="p-3 rounded-l-lg">រូបភាព</th>
                       <th className="p-3">ឈ្មោះទំនិញ</th>
-                      <th className="p-3">ប្រភេទ</th>
+                      <th className="p-3 text-center">ស្តុក</th>
                       <th className="p-3">តម្លៃ</th>
                       <th className="p-3 rounded-r-lg text-center">សកម្មភាព</th>
                     </tr>
@@ -222,10 +260,13 @@ function Admin() {
                           <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded-md border" />
                         </td>
                         <td className="p-3 font-medium text-gray-800 max-w-[200px] truncate">{product.name}</td>
-                        <td className="p-3 uppercase text-xs tracking-wider">{product.category}</td>
+                        <td className="p-3 text-center">
+                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                             {product.stock || 0}
+                           </span>
+                        </td>
                         <td className="p-3 font-bold text-orange-500">${product.price.toFixed(2)}</td>
                         <td className="p-3 flex justify-center gap-2">
-                          {/* ប៊ូតុងកែប្រែ */}
                           <button onClick={() => handleEditClick(product)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition">
                             <Edit size={18} />
                           </button>
