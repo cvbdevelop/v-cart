@@ -40,7 +40,7 @@ const reviewSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// ២. កែសម្រួល Product Schema ដោយបន្ថែម reviews, rating, និង numReviews
+// ២. កែសម្រួល Product Schema 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
@@ -49,19 +49,15 @@ const productSchema = new mongoose.Schema({
   description: { type: String },
   reviews: [reviewSchema], // ផ្ទុកមតិយោបល់
   rating: { type: Number, default: 0 }, // ពិន្ទុផ្កាយសរុប (មធ្យមភាគ)
-  numReviews: { type: Number, default: 0 } // ចំនួនអ្នកវាយតម្លៃសរុប
-  // ... កូដចាស់ (name, price, image, category, description) ...
-  images: { type: [String], default: [] }, // សម្រាប់ផ្ទុករូបភាពបន្ថែម
-  colors: { type: [String], default: [] }, // សម្រាប់ផ្ទុកពណ៌ (ឧ. Red, Blue)
-  sizes: { type: [String], default: [] },  // សម្រាប់ផ្ទុកទំហំ (ឧ. S, M, L)
-  storage: { type: [String], default: [] }, // សម្រាប់ផ្ទុកទំហំម៉ាស៊ីន (ឧ. 128GB, 256GB)
-  // ++++++ សូមបន្ថែមទិន្នន័យថ្មីទាំង ៥ ជួរនេះចូលទីនេះ ++++++
-  images: { type: [String], default: [] },
+  numReviews: { type: Number, default: 0 }, // ចំនួនអ្នកវាយតម្លៃសរុប
+  
+  // +++ ទិន្នន័យចាំបាច់ខាងក្រោមនេះ +++
+  image: { type: String, required: true }, // រូបភាពគោល
+  images: { type: [String], default: [] }, // រូបភាពបន្ថែម
   colors: { type: [String], default: [] },
   sizes: { type: [String], default: [] },
   storage: { type: [String], default: [] },
   stock: { type: Number, default: 0 }
-  // ++++++++++++++++++++++++++++++++++++++++++++
 });
 const Product = mongoose.model('Product', productSchema);
 

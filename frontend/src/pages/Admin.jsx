@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Package, Trash2, Plus, Save, Edit, X, UploadCloud } from 'lucide-react';
+import { Package, Trash2, Plus, Save, Edit, X, UploadCloud, Loader2 } from 'lucide-react';
 
 function Admin() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   
+  // State សម្រាប់កំណត់ពេលកំពុង Upload រូបភាព
+  const [uploading, setUploading] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '', price: '', stock: '', category: 'general', image: '', description: '',
-    images: [], colors: '', sizes: '', storage: '' // images ប្តូរជា Array វិញ
+    images: [], colors: '', sizes: '', storage: '' 
   });
 
   const categories = [
@@ -35,30 +38,52 @@ function Admin() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // មុខងារបំប្លែងរូបភាពទៅជា Base64 ពេល Upload
-  const handleMainImageUpload = (e) => {
+  // ==================== មុខងារ UPLOAD ទៅ CLOUDINARY ====================
+  const uploadImageToServer = async (file) => {
+    const uploadData = new FormData();
+    uploadData.append('image', file);
+    const token = localStorage.getItem('adminToken');
+    
+    try {
+      const res = await fetch('https://v-cart-backend.onrender.com/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: uploadData
+      });
+      const data = await res.json();
+      if (data.imageUrl) return data.imageUrl;
+      else { alert(data.message || 'Error Uploading'); return null; }
+    } catch (err) {
+      console.error(err);
+      alert('មានបញ្ហាក្នុងការ Upload រូបភាពទៅកាន់ Cloudinary');
+      return null;
+    }
+  };
+
+  const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result });
-      };
+      setUploading(true);
+      const url = await uploadImageToServer(file);
+      if (url) setFormData({ ...formData, image: url });
+      setUploading(false);
     }
   };
 
   const handleExtraImagesUpload = async (e) => {
     const files = Array.from(e.target.files);
-    const imagePromises = files.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => resolve(reader.result);
-      });
-    });
-    const base64Images = await Promise.all(imagePromises);
-    setFormData({ ...formData, images: base64Images });
+    if (files.length > 0) {
+      setUploading(true);
+      const uploadedUrls = [];
+      for (let file of files) {
+        const url = await uploadImageToServer(file);
+        if (url) uploadedUrls.push(url);
+      }
+      setFormData(prev => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
+      setUploading(false);
+    }
   };
+  // ====================================================================
 
   const handleEditClick = (product) => {
     setEditingId(product._id);
@@ -84,8 +109,9 @@ function Admin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('adminToken');
+    if (!formData.image) return alert('សូម Upload រូបភាពគោលសិន!');
     
+    const token = localStorage.getItem('adminToken');
     const formattedData = {
       ...formData,
       price: Number(formData.price),
@@ -118,7 +144,7 @@ function Admin() {
       } else {
         alert(data.message || 'ប្រតិបត្តិការបរាជ័យ');
       }
-    } catch (err) { console.error(err); alert('មានបញ្ហាភ្ជាប់ទៅកាន់ Server (អាចមកពីរូបភាពធំពេក)'); }
+    } catch (err) { console.error(err); alert('មានបញ្ហាភ្ជាប់ទៅកាន់ Server'); }
   };
 
   const handleDeleteProduct = async (id) => {
@@ -136,6 +162,13 @@ function Admin() {
     } catch (err) { console.error(err); }
   };
 
+  const removeExtraImage = (indexToRemove) => {
+    setFormData({
+      ...formData,
+      images: formData.images.filter((_, index) => index !== indexToRemove)
+    });
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="container mx-auto px-4 max-w-[1200px]">
@@ -145,7 +178,6 @@ function Admin() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* ================= ផ្នែកខាងឆ្វេង៖ ហ្វមបញ្ជូល ================= */}
           <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -180,24 +212,28 @@ function Admin() {
                 </div>
               </div>
 
-              {/* ផ្នែក Upload រូបភាព */}
+              {/* ប្រអប់ Upload ទៅ Cloudinary */}
               <div className="p-3 bg-gray-50 border rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <UploadCloud size={16} className="text-blue-500" /> រូបភាពគោល (Main Image)
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-2"><UploadCloud size={16} className="text-blue-500" /> រូបភាពគោល</span>
+                  {uploading && <Loader2 size={14} className="animate-spin text-orange-500" />}
                 </label>
-                <input type="file" accept="image/*" onChange={handleMainImageUpload} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                {formData.image && <img src={formData.image} alt="Preview" className="h-16 mt-2 rounded border shadow-sm object-cover" />}
+                <input type="file" accept="image/*" onChange={handleMainImageUpload} disabled={uploading} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50" />
+                {formData.image && <img src={formData.image} alt="Main Preview" className="h-20 mt-3 rounded border shadow-sm object-cover" />}
               </div>
 
               <div className="p-3 bg-gray-50 border rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <UploadCloud size={16} className="text-orange-500" /> រូបភាពបន្ថែម (ជ្រើសរើសបានច្រើន)
+                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-2"><UploadCloud size={16} className="text-orange-500" /> រូបភាពបន្ថែម</span>
                 </label>
-                <input type="file" accept="image/*" multiple onChange={handleExtraImagesUpload} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+                <input type="file" accept="image/*" multiple onChange={handleExtraImagesUpload} disabled={uploading} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 disabled:opacity-50" />
                 {formData.images.length > 0 && (
-                  <div className="flex gap-2 mt-2 overflow-x-auto">
+                  <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                     {formData.images.map((img, idx) => (
-                      <img key={idx} src={img} alt="Preview" className="h-12 w-12 rounded border shadow-sm object-cover flex-shrink-0" />
+                      <div key={idx} className="relative group flex-shrink-0">
+                        <img src={img} alt="Extra Preview" className="h-14 w-14 rounded border shadow-sm object-cover" />
+                        <button type="button" onClick={() => removeExtraImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow"><X size={12}/></button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -227,7 +263,7 @@ function Admin() {
                 <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm"></textarea>
               </div>
 
-              <button type="submit" className={`w-full text-white font-bold py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2 mt-2 ${editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
+              <button type="submit" disabled={uploading} className={`w-full text-white font-bold py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2 mt-2 ${uploading ? 'bg-gray-400' : (editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700')}`}>
                 <Save size={18} /> {editingId ? 'រក្សាទុកការកែប្រែ' : 'បន្ថែមទំនិញថ្មី'}
               </button>
             </form>
@@ -267,12 +303,8 @@ function Admin() {
                         </td>
                         <td className="p-3 font-bold text-orange-500">${product.price.toFixed(2)}</td>
                         <td className="p-3 flex justify-center gap-2">
-                          <button onClick={() => handleEditClick(product)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition">
-                            <Edit size={18} />
-                          </button>
-                          <button onClick={() => handleDeleteProduct(product._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-md transition">
-                            <Trash2 size={18} />
-                          </button>
+                          <button onClick={() => handleEditClick(product)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition"><Edit size={18} /></button>
+                          <button onClick={() => handleDeleteProduct(product._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-md transition"><Trash2 size={18} /></button>
                         </td>
                       </tr>
                     ))}
