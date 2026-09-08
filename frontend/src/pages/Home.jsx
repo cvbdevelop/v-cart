@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom'; // បន្ថែម useSearchParams
+import { Link, useSearchParams } from 'react-router-dom';
 import { useWishlist } from '../contexts/WishlistContext';
 import { Heart, ChevronRight, ShieldCheck, HeadphonesIcon, Truck, Gift } from 'lucide-react';
 
@@ -24,26 +24,45 @@ function Home() {
     { id: 'general', name: 'ទូទៅ (General)' }
   ];
 
-  // ចាប់យកការផ្លាស់ប្តូរពេលចុចពី Navbar
+  // ១. មុខងារទាញយកទិន្នន័យទំនិញពី Server
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('https://v-cart-backend.onrender.com/api/products');
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) { 
+        console.error(err); 
+      } finally { 
+        setLoading(false); // បិទផ្ទាំង Loading ពេលទាញយកចប់
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // ២. មុខងារចាប់យកការផ្លាស់ប្តូរប្រភេទពី URL (ពេលចុចពី Navbar)
   useEffect(() => {
     setActiveCategory(searchParams.get('category') || 'all');
   }, [searchParams]);
 
+  // ៣. មុខងារពេលចុចលើម៉ឺនុយចំហៀងខាងឆ្វេង
+  const handleCategoryClick = (catId) => {
+    setActiveCategory(catId);
+    setSearchParams({ category: catId });
+  };
+
   const filteredProducts = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
 
-  if (loading) return <div className="text-center py-20 text-gray-500 font-medium">កំពុងទាញយកទិន្នន័យ...</div>;
+  if (loading) return <div className="text-center py-20 text-gray-500 font-medium text-lg">កំពុងទាញយកទិន្នន័យ... សូមរង់ចាំបន្តិច</div>;
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
       <div className="container mx-auto px-4 pt-6 max-w-[1400px]">
         
-        {/* រចនាសម្ព័ន្ធបែងចែកជា ៣ ផ្នែក (Grid Layout) */}
         <div className="flex flex-col lg:flex-row gap-6">
           
-          {/* ================= ផ្នែកទី១៖ ជួរឈរខាងឆ្វេង (Left Sidebar) ================= */}
+          {/* ================= ផ្នែកទី១៖ ជួរឈរខាងឆ្វេង ================= */}
           <div className="w-full lg:w-1/4 xl:w-1/5 flex flex-col gap-6">
-            
-            {/* ម៉ឺនុយប្រភេទទំនិញបញ្ឈរ */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
               <div className="bg-orange-500 text-white font-bold py-3 px-4 flex items-center justify-between">
                 <span>≡ ផ្នែកទំនិញ</span>
@@ -62,7 +81,6 @@ function Home() {
               </ul>
             </div>
 
-            {/* បញ្ជីទំនិញពេញនិយម (Popular Products) - បង្ហាញតែ ៣ មុខ */}
             <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hidden lg:block">
               <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">ទំនិញពេញនិយម</h3>
               <div className="flex flex-col gap-4">
@@ -81,12 +99,9 @@ function Home() {
             </div>
           </div>
 
-          {/* ================= ផ្នែកទី២៖ ជួរឈរកណ្តាល (Main Content) ================= */}
+          {/* ================= ផ្នែកទី២៖ ជួរឈរកណ្តាល ================= */}
           <div className="w-full lg:w-2/4 xl:w-3/5 flex flex-col gap-6">
-            
-            {/* ផ្ទាំងផ្សព្វផ្សាយធំ (Hero Banner) */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-between p-8 md:p-12 border border-gray-100 relative h-[300px] md:h-[400px]">
-              {/* រង្វង់ Graphic ខាងក្រោយ */}
               <div className="absolute top-10 left-10 w-64 h-64 border-[30px] border-orange-400 rounded-full opacity-20"></div>
               <div className="absolute top-20 right-40 w-24 h-24 border-[15px] border-orange-400 rounded-full opacity-20"></div>
               
@@ -102,18 +117,16 @@ function Home() {
               </div>
             </div>
 
-            {/* របារប្រូម៉ូសិន (Offer Strip) */}
             <div className="bg-orange-400 rounded-xl shadow-sm px-6 py-4 flex justify-between items-center text-white">
-              <span className="font-bold text-lg">ការផ្តល់ជូនពិសេសសម្រាប់ទំនិញថ្មីៗ (Big offers on new collection)</span>
+              <span className="font-bold text-lg">ការផ្តល់ជូនពិសេសសម្រាប់ទំនិញថ្មីៗ</span>
               <button className="bg-white text-orange-500 px-4 py-2 rounded-md font-bold text-sm hover:bg-gray-50 transition">
                 ស្វែងយល់បន្ថែម
               </button>
             </div>
 
-            {/* បញ្ជីទំនិញ (Product Grid) */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
               <div className="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 className="text-xl font-bold text-gray-800">ទំនិញកំពុងពេញនិយម (Trending Now)</h2>
+                <h2 className="text-xl font-bold text-gray-800">ទំនិញកំពុងពេញនិយម</h2>
                 <div className="hidden md:flex gap-4 text-sm font-bold text-gray-400">
                   <span className="text-gray-800 cursor-pointer">ថ្មីៗបំផុត</span>
                   <span className="cursor-pointer hover:text-gray-800 transition">កំពុងលក់បញ្ចុះតម្លៃ</span>
@@ -141,14 +154,17 @@ function Home() {
                   </div>
                 ))}
               </div>
+              
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  មិនមានទំនិញក្នុងប្រភេទនេះទេ។
+                </div>
+              )}
             </div>
-
           </div>
 
-          {/* ================= ផ្នែកទី៣៖ ជួរឈរខាងស្តាំ (Right Sidebar) ================= */}
+          {/* ================= ផ្នែកទី៣៖ ជួរឈរខាងស្តាំ ================= */}
           <div className="w-full lg:w-1/4 xl:w-1/5 flex flex-col gap-6 hidden xl:flex">
-            
-            {/* ផ្នែកសេវាកម្ម (Features / Guarantees) */}
             <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 flex flex-col gap-6">
               <div className="flex gap-4 items-start">
                 <ShieldCheck className="text-orange-400 flex-shrink-0" size={28} />
@@ -187,7 +203,6 @@ function Home() {
               </div>
             </div>
 
-            {/* ផ្នែកអំពីយើង (About Us Placeholder) */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
               <h3 className="font-bold text-gray-800 p-4 border-b bg-gray-50 text-sm">អំពីយើង (About Us)</h3>
               <div className="p-4">
@@ -197,8 +212,8 @@ function Home() {
                 </p>
               </div>
             </div>
-
           </div>
+
         </div>
       </div>
     </div>
