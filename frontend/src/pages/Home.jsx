@@ -56,7 +56,7 @@ function Home() {
   if (loading) return <div className="text-center py-20 text-gray-500 font-medium text-lg">កំពុងទាញយកទិន្នន័យ... សូមរង់ចាំបន្តិច</div>;
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-12">
+    <div className="bg-gray-50 pb-12">
       <div className="container mx-auto px-4 pt-6 max-w-[1400px]">
         
         <div className="flex flex-col lg:flex-row gap-6">
