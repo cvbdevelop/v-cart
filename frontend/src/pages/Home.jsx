@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom'; // បន្ថែម useSearchParams
+import { useWishlist } from '../contexts/WishlistContext';
+import { Heart, ChevronRight, ShieldCheck, HeadphonesIcon, Truck, Gift } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../contexts/WishlistContext';
 import { Heart, ChevronRight, ShieldCheck, HeadphonesIcon, Truck, Gift } from 'lucide-react';
 
 function Home() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'all';
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   
   const wishlistContext = useWishlist() || {};
   const toggleWishlist = wishlistContext.toggleWishlist || (() => {});
@@ -21,16 +28,10 @@ function Home() {
     { id: 'general', name: 'ទូទៅ (General)' }
   ];
 
+  // ចាប់យកការផ្លាស់ប្តូរពេលចុចពី Navbar
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch('https://v-cart-backend.onrender.com/api/products');
-        const data = await res.json();
-        setProducts(data);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
-    };
-    fetchProducts();
-  }, []);
+    setActiveCategory(searchParams.get('category') || 'all');
+  }, [searchParams]);
 
   const filteredProducts = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
 
@@ -55,7 +56,7 @@ function Home() {
                 {categories.map(cat => (
                   <li key={cat.id}>
                     <button 
-                      onClick={() => setActiveCategory(cat.id)}
+                      onClick={() => handleCategoryClick(cat.id)}
                       className={`w-full text-left px-4 py-3 text-sm flex justify-between items-center border-b border-gray-50 transition hover:text-orange-500 ${activeCategory === cat.id ? 'text-orange-500 font-bold bg-orange-50' : 'text-gray-600'}`}
                     >
                       {cat.name} <ChevronRight size={16} className="text-gray-300" />

@@ -105,11 +105,11 @@ function Navbar() {
             
             {/* តំណភ្ជាប់ (Navigation Links) */}
             <nav className="flex items-center gap-8 text-sm font-bold text-gray-700">
-              <Link to="/" className="text-orange-500 border-b-2 border-orange-500 pb-[13px] pt-[15px]">ទំព័រដើម</Link>
-              <Link to="/tracking" className="hover:text-orange-500 transition">តាមដានបញ្ជាទិញ</Link>
-              <Link to="/" className="hover:text-orange-500 transition">សម្លៀកបំពាក់</Link>
-              <Link to="/" className="hover:text-orange-500 transition">គ្រឿងអេឡិចត្រូនិច</Link>
-              <Link to="/" className="hover:text-orange-500 transition">ទំនាក់ទំនងយើង</Link>
+              <Link to="/" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">ទំព័រដើម</Link>
+              <Link to="/tracking" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">តាមដានបញ្ជាទិញ</Link>
+              <Link to="/?category=clothing" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">សម្លៀកបំពាក់</Link>
+              <Link to="/?category=electronics" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">គ្រឿងអេឡិចត្រូនិច</Link>
+              <Link to="/contact" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">ទំនាក់ទំនងយើង</Link>
             </nav>
 
             {/* លេខទូរស័ព្ទ (Contact Info) */}

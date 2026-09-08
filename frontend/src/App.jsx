@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+// បន្ថែមការ Import នៅផ្នែកខាងលើ
+import Contact from './pages/Contact';
 // Import ទំព័រនិងសមាសធាតុ (Components & Pages)
 import Navbar from './components/Navbar';
 import Footer from './components/Footer'; // ១. បន្ថែមការ Import Footer នៅទីនេះ
@@ -36,6 +37,8 @@ function App() {
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/wishlist" element={<Wishlist />} />
+                // បន្ថែម Route នេះនៅខាងក្រោម Route ផ្សេងៗទៀត
+                <Route path="/contact" element={<Contact />} />
               </Routes>
             </main>
 
