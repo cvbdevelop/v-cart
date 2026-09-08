@@ -44,15 +44,17 @@ const reviewSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   price: { type: Number, required: true },
-  image: { type: String, required: true },
   category: { type: String },
   countInStock: { type: Number },
   description: { type: String },
-  sizes: { type: [String] },  
-  colors: { type: [String] },
   reviews: [reviewSchema], // ផ្ទុកមតិយោបល់
   rating: { type: Number, default: 0 }, // ពិន្ទុផ្កាយសរុប (មធ្យមភាគ)
   numReviews: { type: Number, default: 0 } // ចំនួនអ្នកវាយតម្លៃសរុប
+  // ... កូដចាស់ (name, price, image, category, description) ...
+  images: { type: [String], default: [] }, // សម្រាប់ផ្ទុករូបភាពបន្ថែម
+  colors: { type: [String], default: [] }, // សម្រាប់ផ្ទុកពណ៌ (ឧ. Red, Blue)
+  sizes: { type: [String], default: [] },  // សម្រាប់ផ្ទុកទំហំ (ឧ. S, M, L)
+  storage: { type: [String], default: [] }, // សម្រាប់ផ្ទុកទំហំម៉ាស៊ីន (ឧ. 128GB, 256GB)
 });
 const Product = mongoose.model('Product', productSchema);
 
