@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Package, Trash2, Plus, Image as ImageIcon, Save } from 'lucide-react';
+import { Package, Trash2, Plus, Save, Edit, X } from 'lucide-react';
 
 function Admin() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // បន្ថែម State ថ្មីសម្រាប់ផ្ទុកទិន្នន័យ (images, colors, sizes, storage)
+  // State សម្រាប់ចំណាំថាតើយើងកំពុង "បន្ថែមថ្មី" ឬ "កែប្រែចាស់"
+  const [editingId, setEditingId] = useState(null);
+  
   const [formData, setFormData] = useState({
     name: '', price: '', category: 'general', image: '', description: '',
     images: '', colors: '', sizes: '', storage: ''
@@ -35,23 +37,52 @@ function Admin() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddProduct = async (e) => {
+  // មុខងារពេលចុចប៊ូតុង "កែប្រែ" នៅលើតារាង
+  const handleEditClick = (product) => {
+    setEditingId(product._id);
+    setFormData({
+      name: product.name || '',
+      price: product.price || '',
+      category: product.category || 'general',
+      image: product.image || '',
+      description: product.description || '',
+      images: product.images ? product.images.join(', ') : '',
+      colors: product.colors ? product.colors.join(', ') : '',
+      sizes: product.sizes ? product.sizes.join(', ') : '',
+      storage: product.storage ? product.storage.join(', ') : ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // អូសឡើងលើទៅរកហ្វម
+  };
+
+  // មុខងារពេលចុចបោះបង់ការកែប្រែ
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({ name: '', price: '', category: 'general', image: '', description: '', images: '', colors: '', sizes: '', storage: '' });
+  };
+
+  // មុខងារបញ្ជូនទិន្នន័យ (ប្រើសម្រាប់ទាំង Add ថ្មី និង Update ចាស់)
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('adminToken');
     
-    // បំប្លែងអត្ថបទដែលខណ្ឌដោយសញ្ញាក្បៀស (,) ទៅជា Array មុនពេលបញ្ជូនទៅ Backend
     const formattedData = {
       ...formData,
       price: Number(formData.price),
-      images: formData.images ? formData.images.split(',').map(item => item.trim()) : [],
-      colors: formData.colors ? formData.colors.split(',').map(item => item.trim()) : [],
-      sizes: formData.sizes ? formData.sizes.split(',').map(item => item.trim()) : [],
-      storage: formData.storage ? formData.storage.split(',').map(item => item.trim()) : [],
+      images: formData.images ? formData.images.split(',').map(item => item.trim()).filter(Boolean) : [],
+      colors: formData.colors ? formData.colors.split(',').map(item => item.trim()).filter(Boolean) : [],
+      sizes: formData.sizes ? formData.sizes.split(',').map(item => item.trim()).filter(Boolean) : [],
+      storage: formData.storage ? formData.storage.split(',').map(item => item.trim()).filter(Boolean) : [],
     };
 
+    // បើមាន editingId មានន័យថាកំពុង Update, បើគ្មានគឺ Add ថ្មី
+    const url = editingId 
+      ? `https://v-cart-backend.onrender.com/api/products/${editingId}` 
+      : 'https://v-cart-backend.onrender.com/api/products';
+    const method = editingId ? 'PUT' : 'POST';
+
     try {
-      const res = await fetch('https://v-cart-backend.onrender.com/api/products', {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: method,
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -59,12 +90,13 @@ function Admin() {
         body: JSON.stringify(formattedData)
       });
       const data = await res.json();
-      if (data.success) {
-        alert('បានបន្ថែមទំនិញជោគជ័យ!');
-        setFormData({ name: '', price: '', category: 'general', image: '', description: '', images: '', colors: '', sizes: '', storage: '' });
+      
+      if (data.success || res.ok) {
+        alert(editingId ? 'បានកែប្រែទំនិញជោគជ័យ!' : 'បានបន្ថែមទំនិញជោគជ័យ!');
+        handleCancelEdit();
         fetchProducts();
       } else {
-        alert(data.message || 'បរាជ័យក្នុងការបន្ថែមទំនិញ');
+        alert(data.message || 'ប្រតិបត្តិការបរាជ័យ');
       }
     } catch (err) { console.error(err); alert('មានបញ្ហាភ្ជាប់ទៅកាន់ Server'); }
   };
@@ -80,8 +112,6 @@ function Admin() {
       const data = await res.json();
       if (data.success) {
         setProducts(products.filter(p => p._id !== id));
-      } else {
-        alert(data.message || 'បរាជ័យក្នុងការលុបទំនិញ');
       }
     } catch (err) { console.error(err); }
   };
@@ -90,23 +120,28 @@ function Admin() {
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="container mx-auto px-4 max-w-[1200px]">
         <h1 className="text-2xl font-black text-gray-800 mb-8 flex items-center gap-3">
-          <Package className="text-orange-500" /> ផ្ទាំងគ្រប់គ្រងទំនិញ (Admin Dashboard)
+          <Package className="text-orange-500" /> ផ្ទាំងគ្រប់គ្រងទំនិញ
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* ================= ផ្នែកខាងឆ្វេង៖ ហ្វមបញ្ចូលទំនិញថ្មី ================= */}
-          <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <Plus size={20} className="text-blue-600" /> បន្ថែមទំនិញថ្មី
-            </h2>
-            <form onSubmit={handleAddProduct} className="flex flex-col gap-4">
-              
+          {/* ================= ផ្នែកខាងឆ្វេង៖ ហ្វមបញ្ជូល/កែប្រែ ================= */}
+          <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                {editingId ? <Edit size={20} className="text-orange-500" /> : <Plus size={20} className="text-blue-600" />}
+                {editingId ? 'កែប្រែទំនិញ' : 'បន្ថែមទំនិញថ្មី'}
+              </h2>
+              {editingId && (
+                <button onClick={handleCancelEdit} className="text-gray-400 hover:text-red-500 transition"><X size={20} /></button>
+              )}
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះទំនិញ</label>
                 <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
               </div>
-              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">តម្លៃ ($)</label>
@@ -127,7 +162,7 @@ function Admin() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">រូបភាពបន្ថែម (ក្បៀសពីគ្នា)</label>
-                <input type="text" name="images" value={formData.images} onChange={handleInputChange} placeholder="URL1, URL2, URL3" className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
+                <input type="text" name="images" value={formData.images} onChange={handleInputChange} placeholder="URL1, URL2" className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
               </div>
 
               <div>
@@ -135,19 +170,17 @@ function Admin() {
                 <input type="text" name="colors" value={formData.colors} onChange={handleInputChange} placeholder="Red, Blue, Black" className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
               </div>
 
-              {/* បង្ហាញជម្រើស "ទំហំ (Size)" តែពេលរើសប្រភេទ សម្លៀកបំពាក់ ឬ ស្បែកជើង */}
               {(formData.category === 'clothing' || formData.category === 'shoes') && (
                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <label className="block text-sm font-bold text-blue-800 mb-1">ទំហំ (Sizes - ក្បៀសពីគ្នា)</label>
-                  <input type="text" name="sizes" value={formData.sizes} onChange={handleInputChange} placeholder="S, M, L, XL ឬ 41, 42" className="w-full border border-blue-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
+                  <input type="text" name="sizes" value={formData.sizes} onChange={handleInputChange} placeholder="S, M, L, XL" className="w-full border border-blue-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm" />
                 </div>
               )}
 
-              {/* បង្ហាញជម្រើស "ទំហំផ្ទុក (Storage)" តែពេលរើសប្រភេទ អេឡិចត្រូនិច */}
               {(formData.category === 'electronics') && (
                 <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
                   <label className="block text-sm font-bold text-orange-800 mb-1">ទំហំផ្ទុក (Storage - ក្បៀសពីគ្នា)</label>
-                  <input type="text" name="storage" value={formData.storage} onChange={handleInputChange} placeholder="128GB, 256GB, 1TB" className="w-full border border-orange-200 px-3 py-2 rounded-lg outline-none focus:border-orange-500 text-sm" />
+                  <input type="text" name="storage" value={formData.storage} onChange={handleInputChange} placeholder="128GB, 256GB" className="w-full border border-orange-200 px-3 py-2 rounded-lg outline-none focus:border-orange-500 text-sm" />
                 </div>
               )}
 
@@ -156,8 +189,8 @@ function Admin() {
                 <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className="w-full border px-3 py-2 rounded-lg outline-none focus:border-blue-500 text-sm"></textarea>
               </div>
 
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2 mt-2">
-                <Save size={18} /> រក្សាទុកទំនិញ
+              <button type="submit" className={`w-full text-white font-bold py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2 mt-2 ${editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                <Save size={18} /> {editingId ? 'រក្សាទុកការកែប្រែ' : 'បន្ថែមទំនិញថ្មី'}
               </button>
             </form>
           </div>
@@ -191,7 +224,11 @@ function Admin() {
                         <td className="p-3 font-medium text-gray-800 max-w-[200px] truncate">{product.name}</td>
                         <td className="p-3 uppercase text-xs tracking-wider">{product.category}</td>
                         <td className="p-3 font-bold text-orange-500">${product.price.toFixed(2)}</td>
-                        <td className="p-3 text-center">
+                        <td className="p-3 flex justify-center gap-2">
+                          {/* ប៊ូតុងកែប្រែ */}
+                          <button onClick={() => handleEditClick(product)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition">
+                            <Edit size={18} />
+                          </button>
                           <button onClick={() => handleDeleteProduct(product._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-md transition">
                             <Trash2 size={18} />
                           </button>

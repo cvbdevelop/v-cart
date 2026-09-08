@@ -159,17 +159,17 @@ app.post('/api/coupons/verify', async (req, res) => {
 
 // ==================== PRODUCT APIs ====================
 
-// API សម្រាប់ទាញយកទិន្នន័យទំនិញ "តែមួយមុខ" តាមរយៈ ID
+// ១. API សម្រាប់ទាញយកទំនិញតែមួយមុខ (សម្រាប់ផ្ទាំង Product Detail)
 app.get('/api/products/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'រកមិនឃើញទំនិញនេះទេ' });
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: 'រកមិនឃើញទំនិញនេះទេ' });
     }
-    res.json(product); // បញ្ជូនទិន្នន័យទំនិញទៅកាន់ Frontend វិញ
   } catch (error) {
-    console.error("Error fetching product:", error);
-    res.status(500).json({ message: 'មានបញ្ហាក្នុងការទាញយកទិន្នន័យ' });
+    res.status(500).json({ message: 'មានបញ្ហា Server' });
   }
 });
 
@@ -183,10 +183,10 @@ app.post('/api/products', protect, async (req, res) => {
   }
 });
 
-app.put('/api/products/:id', protect, async (req, res) => {
+app.put('/api/products/:id', async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, message: 'កែប្រែទំនិញជោគជ័យ', updatedProduct });
+    res.json({ success: true, product: updatedProduct });
   } catch (error) {
     res.status(500).json({ success: false, message: 'បរាជ័យក្នុងការកែប្រែទំនិញ' });
   }
