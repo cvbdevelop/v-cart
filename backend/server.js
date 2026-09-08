@@ -159,12 +159,17 @@ app.post('/api/coupons/verify', async (req, res) => {
 
 // ==================== PRODUCT APIs ====================
 
-app.get('/api/products', async (req, res) => {
+// API សម្រាប់ទាញយកទិន្នន័យទំនិញ "តែមួយមុខ" តាមរយៈ ID
+app.get('/api/products/:id', async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.json(products);
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'រកមិនឃើញទំនិញនេះទេ' });
+    }
+    res.json(product); // បញ្ជូនទិន្នន័យទំនិញទៅកាន់ Frontend វិញ
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error' });
+    console.error("Error fetching product:", error);
+    res.status(500).json({ message: 'មានបញ្ហាក្នុងការទាញយកទិន្នន័យ' });
   }
 });
 
