@@ -2,10 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom'; // បន្ថែម useSearchParams
 import { useWishlist } from '../contexts/WishlistContext';
 import { Heart, ChevronRight, ShieldCheck, HeadphonesIcon, Truck, Gift } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useWishlist } from '../contexts/WishlistContext';
-import { Heart, ChevronRight, ShieldCheck, HeadphonesIcon, Truck, Gift } from 'lucide-react';
 
 function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
