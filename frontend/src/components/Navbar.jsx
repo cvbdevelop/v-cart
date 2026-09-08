@@ -103,17 +103,20 @@ function Navbar() {
         <div className="container mx-auto px-4 max-w-[1400px]">
           <div className="flex justify-between items-center h-12">
             
-            {/* តំណភ្ជាប់ (Navigation Links) */}
-            <nav className="flex items-center gap-8 text-sm font-bold text-gray-700">
+            {/* តំណភ្ជាប់ (Navigation Links) - បន្ថែមប្រភេទទំនិញទាំងអស់ */}
+            <nav className="flex items-center gap-5 lg:gap-6 text-sm font-bold text-gray-700 overflow-x-auto whitespace-nowrap scrollbar-hide">
               <Link to="/" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">ទំព័រដើម</Link>
-              <Link to="/tracking" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">តាមដានបញ្ជាទិញ</Link>
               <Link to="/?category=clothing" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">សម្លៀកបំពាក់</Link>
-              <Link to="/?category=electronics" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">គ្រឿងអេឡិចត្រូនិច</Link>
+              <Link to="/?category=shoes" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">ស្បែកជើង</Link>
+              <Link to="/?category=accessories" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">គ្រឿងតុបតែង</Link>
+              <Link to="/?category=electronics" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">អេឡិចត្រូនិច</Link>
+              <Link to="/?category=general" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">ទូទៅ</Link>
+              <Link to="/tracking" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">តាមដានបញ្ជាទិញ</Link>
               <Link to="/contact" className="hover:text-orange-500 transition focus:text-orange-500 focus:border-b-2 focus:border-orange-500 pb-[13px] pt-[15px]">ទំនាក់ទំនងយើង</Link>
             </nav>
 
             {/* លេខទូរស័ព្ទ (Contact Info) */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ml-4 flex-shrink-0">
               <div className="bg-orange-500 p-1.5 rounded-full text-white">
                 <Phone size={14} />
               </div>
