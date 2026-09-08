@@ -1,9 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// បន្ថែមការ Import នៅផ្នែកខាងលើ
-import Contact from './pages/Contact';
+
 // Import ទំព័រនិងសមាសធាតុ (Components & Pages)
 import Navbar from './components/Navbar';
-import Footer from './components/Footer'; // ១. បន្ថែមការ Import Footer នៅទីនេះ
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
@@ -12,6 +11,7 @@ import OrderTracking from './pages/OrderTracking';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Wishlist from './pages/Wishlist';
+import Contact from './pages/Contact';
 
 // Import ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យ (Contexts)
 import { CartProvider } from './contexts/CartContext';
@@ -22,11 +22,12 @@ function App() {
     <CartProvider>
       <WishlistProvider>
         <Router>
-          {/* ប្រើ flex និង min-h-screen ដើម្បីរុញ Footer ឱ្យនៅបាតក្រោមជានិច្ច ទោះទំព័រខ្លីក៏ដោយ */}
-          <div className="flex flex-col min-h-screen"> 
+          {/* កំណត់ពណ៌ផ្ទៃខាងក្រោយ និងប្រើ min-h-screen នៅទីនេះទើបត្រឹមត្រូវ */}
+          <div className="flex flex-col min-h-screen bg-gray-50"> 
+            
             <Navbar />
             
-            {/* ផ្នែកកណ្តាល (បង្ហាញទំព័រផ្សេងៗ) */}
+            {/* flex-grow នឹងរុញ Footer ឱ្យនៅបាតក្រោមជានិច្ច ទោះទំព័រមានទំនិញតិចក៏ដោយ */}
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -37,13 +38,12 @@ function App() {
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/wishlist" element={<Wishlist />} />
-                // បន្ថែម Route នេះនៅខាងក្រោម Route ផ្សេងៗទៀត
                 <Route path="/contact" element={<Contact />} />
               </Routes>
             </main>
 
-            {/* ២. ដាក់ Footer នៅផ្នែកខាងក្រោមគេ */}
             <Footer />
+            
           </div>
         </Router>
       </WishlistProvider>
