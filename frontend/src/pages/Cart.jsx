@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../contexts/CartContext';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, ShoppingBag } from 'lucide-react';
 
 function Cart() {
   const cartContext = useContext(CartContext) || {};
@@ -10,11 +10,9 @@ function Cart() {
   const updateQuantity = cartContext.updateQuantity || (() => {});
   const navigate = useNavigate();
 
-  // គណនាចំនួនទំនិញ និងតម្លៃសរុប
   const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0);
   const totalPrice = cart.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
 
-  // បង្ហាញផ្ទាំងនេះនៅពេលកន្ត្រកទទេ
   if (cart.length === 0) {
     return (
       <div className="bg-gray-50 min-h-screen py-12">
@@ -54,7 +52,6 @@ function Cart() {
                   </Link>
                   <div className="text-orange-500 font-black mt-1">${item.price.toFixed(2)}</div>
                   
-                  {/* +++ ផ្នែកបង្ហាញជម្រើសដែលអតិថិជនបានជ្រើសរើស (ពណ៌ ទំហំផ្ទុក ទំហំ) +++ */}
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm bg-gray-50 px-3 py-1.5 rounded-md inline-flex border border-gray-100">
                     {item.selectedColor && (
                       <div className="text-gray-500">ពណ៌៖ <span className="font-bold text-gray-700">{item.selectedColor}</span></div>
@@ -65,12 +62,10 @@ function Cart() {
                     {item.selectedSize && (
                       <div className="text-gray-500 border-l border-gray-300 pl-4 ml-2">ទំហំ៖ <span className="font-bold text-gray-700">{item.selectedSize}</span></div>
                     )}
-                    {/* បង្ហាញសញ្ញា - បើអតិថិជនមិនបានរើសអ្វីសោះ (ទំនិញទូទៅ) */}
                     {(!item.selectedColor && !item.selectedStorage && !item.selectedSize) && (
                       <div className="text-gray-400 italic">ទំនិញស្តង់ដារ (គ្មានជម្រើស)</div>
                     )}
                   </div>
-                  {/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */}
                 </div>
 
                 <div className="flex items-center gap-6 mt-4 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
@@ -128,6 +123,15 @@ function Cart() {
               >
                 បន្តទៅទូទាត់ប្រាក់ <ArrowRight size={18} />
               </button>
+
+              {/* +++ ប៊ូតុងត្រឡប់ទៅទិញទំនិញបន្ត +++ */}
+              <Link 
+                to="/"
+                className="w-full mt-3 bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 font-bold py-3.5 rounded-lg transition flex items-center justify-center gap-2"
+              >
+                <ArrowLeft size={18} /> ទិញទំនិញបន្ថែមទៀត
+              </Link>
+
             </div>
           </div>
         </div>
