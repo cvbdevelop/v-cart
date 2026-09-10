@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // បន្ថែម useNavigate សម្រាប់បញ្ជូនទៅទំព័រផ្សេង
-import { Package, Trash2, Plus, Save, Edit, X, UploadCloud, Loader2, LogOut } from 'lucide-react'; // បន្ថែម Icon LogOut
+import { useNavigate } from 'react-router-dom';
+import { Package, Trash2, Plus, Save, Edit, X, UploadCloud, Loader2, LogOut } from 'lucide-react';
 
 function Admin() {
-  const navigate = useNavigate(); // ប្រកាសប្រើប្រាស់ navigate
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -23,9 +23,16 @@ function Admin() {
     { id: 'general', name: 'ទូទៅ (General)' }
   ];
 
+  // បន្ថែមការការពារទំព័រនៅទីនេះ!
   useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    // បើគ្មាន Token ទេ (ឧ. មិនទាន់ Login ឬទើបតែ Log Out) ឱ្យរុញទៅទំព័រ Login វិញភ្លាមៗ
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     fetchProducts();
-  }, []);
+  }, [navigate]); // បន្ថែម navigate ចូលក្នុង Dependency
 
   const fetchProducts = async () => {
     try {
@@ -168,11 +175,10 @@ function Admin() {
     });
   };
 
-  // មុខងារសម្រាប់ ចាកចេញ (Logout)
   const handleLogout = () => {
     if (window.confirm('តើអ្នកពិតជាចង់ចាកចេញពីគណនី Admin មែនទេ?')) {
-      localStorage.removeItem('adminToken'); // លុបសោសម្ងាត់ចេញ
-      navigate('/'); // បញ្ជូនត្រឡប់ទៅទំព័រដើមវិញ
+      localStorage.removeItem('adminToken'); 
+      navigate('/login'); // រុញទៅទំព័រ Login ពេលអ្នកប្រើប្រាស់ចុច Log out ជោគជ័យ
     }
   };
 
@@ -180,7 +186,6 @@ function Admin() {
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="container mx-auto px-4 max-w-[1200px]">
         
-        {/* បន្ថែម Flexbox ដើម្បីដាក់ប៊ូតុង Logout នៅខាងស្តាំ */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <h1 className="text-2xl font-black text-gray-800 flex items-center gap-3">
             <Package className="text-orange-500" /> ផ្ទាំងគ្រប់គ្រងទំនិញ
