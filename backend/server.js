@@ -163,6 +163,20 @@ app.post('/api/coupons/verify', async (req, res) => {
 
 // ==================== PRODUCT APIs ====================
 
+// ==================== PRODUCT APIs ====================
+
+// API សម្រាប់ទាញយកបញ្ជីទំនិញទាំងអស់ (បង្ហាញក្នុង Admin និងទំព័រដើម)
+app.get('/api/products', async (req, res) => {
+  try {
+    // ទាញយកទំនិញទាំងអស់ ហើយតម្រៀបយកទំនិញទើបបញ្ចូលថ្មីៗមកបង្ហាញមុនគេ (-1)
+    const products = await Product.find().sort({ _id: -1 });
+    res.json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: 'បរាជ័យក្នុងការទាញយកទិន្នន័យទំនិញ' });
+  }
+});
+
 // ១. API សម្រាប់ទាញយកទំនិញតែមួយមុខ (សម្រាប់ផ្ទាំង Product Detail)
 app.get('/api/products/:id', async (req, res) => {
   try {
