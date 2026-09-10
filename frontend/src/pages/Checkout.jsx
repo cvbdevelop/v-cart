@@ -19,7 +19,6 @@ function Checkout() {
   const [discount, setDiscount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // គណនាតម្លៃ
   const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0);
   const subTotal = cart.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
   const discountAmount = (subTotal * discount) / 100;
@@ -103,7 +102,6 @@ function Checkout() {
 
         <div className="flex flex-col md:flex-row gap-8">
           
-          {/* ផ្នែកខាងឆ្វេង៖ ព័ត៌មានអ្នកទទួល */}
           <div className="w-full md:w-1/2">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-3">ព័ត៌មានអ្នកទទួល</h3>
@@ -134,7 +132,6 @@ function Checkout() {
             </div>
           </div>
 
-          {/* ផ្នែកខាងស្តាំ៖ សង្ខេបការបញ្ជាទិញ */}
           <div className="w-full md:w-1/2">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
               <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-3">សង្ខេបការបញ្ជាទិញ ({totalItems} ទំនិញ)</h3>
@@ -147,13 +144,11 @@ function Checkout() {
                         {item.name} <span className="text-orange-500 text-xs font-bold ml-1">x{item.quantity || 1}</span>
                       </span>
                       
-                      {/* +++ បន្ថែមការបង្ហាញជម្រើស ពណ៌ និងទំហំ នៅទីនេះ +++ */}
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500 mt-0.5">
                         {item.selectedColor && <span>ពណ៌៖ <span className="text-gray-800 font-medium">{item.selectedColor}</span></span>}
                         {item.selectedStorage && <span className={`${item.selectedColor ? 'border-l pl-3' : ''}`}>ទំហំផ្ទុក៖ <span className="text-gray-800 font-medium">{item.selectedStorage}</span></span>}
                         {item.selectedSize && <span className={`${(item.selectedColor || item.selectedStorage) ? 'border-l pl-3' : ''}`}>ទំហំ៖ <span className="text-gray-800 font-medium">{item.selectedSize}</span></span>}
                       </div>
-                      {/* +++++++++++++++++++++++++++++++++++++++++++ */}
                     </div>
                     <span className="font-bold text-gray-800 mt-0.5">${(item.price * (item.quantity || 1)).toFixed(2)}</span>
                   </div>
@@ -178,12 +173,15 @@ function Checkout() {
                   <span>តម្លៃសរុប</span>
                   <span>${subTotal.toFixed(2)}</span>
                 </div>
+                
+                {/* បានកែសម្រួលសញ្ញាបិទនៅត្រង់នេះ (ពី </div> ទៅជា )} វិញ) */}
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>បញ្ចុះតម្លៃ ({discount}%)</span>
                     <span>-${discountAmount.toFixed(2)}</span>
                   </div>
-                </div>
+                )}
+                
                 <div className="flex justify-between">
                   <span>ថ្លៃដឹកជញ្ជូន</span>
                   <span className="text-green-500 font-medium">ឥតគិតថ្លៃ</span>
