@@ -87,6 +87,36 @@ const couponSchema = new mongoose.Schema({
 });
 const Coupon = mongoose.model('Coupon', couponSchema);
 
+// ==================== BANNER SCHEMAS & APIs ====================
+const bannerSchema = new mongoose.Schema({
+  mainImage: { type: String, default: '' },
+  sideImage: { type: String, default: '' }
+});
+const Banner = mongoose.model('Banner', bannerSchema);
+
+// API សម្រាប់ទាញយករូបភាព Banner មកបង្ហាញលើទំព័រដើម
+app.get('/api/banners', async (req, res) => {
+  try {
+    let banner = await Banner.findOne();
+    if (!banner) banner = await Banner.create({ mainImage: '', sideImage: '' });
+    res.json(banner);
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+
+// API សម្រាប់ Admin កែប្រែរូបភាព Banner
+app.put('/api/banners', async (req, res) => {
+  try {
+    let banner = await Banner.findOne();
+    if (!banner) banner = new Banner();
+    
+    banner.mainImage = req.body.mainImage !== undefined ? req.body.mainImage : banner.mainImage;
+    banner.sideImage = req.body.sideImage !== undefined ? req.body.sideImage : banner.sideImage;
+    
+    await banner.save();
+    res.json({ success: true, message: 'បានកែប្រែរូបភាព Banner ជោគជ័យ', banner });
+  } catch (err) { res.status(500).json({ success: false, error: 'Server Error' }); }
+});
+
 // ==================== AUTH & MIDDLEWARE ====================
 
 app.get('/api/setup-admin', async (req, res) => {
