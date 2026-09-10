@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ShoppingCart, User, Search, Heart, Phone, Menu } from 'lucide-react';
 import { useContext } from 'react';
 import { CartContext } from '../contexts/CartContext';

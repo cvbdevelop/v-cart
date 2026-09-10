@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Truck, ShieldCheck, Clock, Gift } from 'lucide-react';
 
 function Home() {
@@ -7,8 +7,9 @@ function Home() {
   const [banners, setBanners] = useState({ mainImage: '', sideImage: '' });
   const [loading, setLoading] = useState(true);
   
-  // State សម្រាប់ចម្រាញ់ទំនិញតាមម៉ឺនុយ
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // +++ ចំណុចដែលបានកែប្រែ៖ ប្រើប្រាស់ URL ជាគោល ដើម្បីឱ្យម៉ឺនុយលើ និងឆ្វេងដើរស្របគ្នា +++
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || 'all';
 
   useEffect(() => {
     fetchProducts();
@@ -46,7 +47,6 @@ function Home() {
     { id: 'general', name: 'ទូទៅ (General)' }
   ];
 
-  // បញ្ជីទំនិញដែលត្រូវបង្ហាញ (ក្រោយពេល Filter)
   const displayedProducts = selectedCategory === 'all' 
     ? products 
     : products.filter(p => p.category === selectedCategory);
@@ -59,7 +59,6 @@ function Home() {
           {/* ================= ១. ផ្នែកខាងឆ្វេង ================= */}
           <div className="w-full lg:w-1/4 flex flex-col gap-6">
             
-            {/* ម៉ឺនុយជម្រើសទំនិញ */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="bg-orange-500 text-white font-bold px-5 py-3">
                 ≡ ជម្រើសទំនិញ
@@ -68,7 +67,8 @@ function Home() {
                 {categories.map(c => (
                   <li key={c.id} className="border-b border-gray-50 last:border-0">
                     <button 
-                      onClick={() => setSelectedCategory(c.id)}
+                      // +++ កែប្រែនៅទីនេះ៖ ឱ្យប៊ូតុងខាងឆ្វេងបញ្ជូនទិន្នន័យទៅ URL ដែរ +++
+                      onClick={() => setSearchParams(c.id === 'all' ? {} : { category: c.id })}
                       className={`w-full text-left px-5 py-3 transition ${selectedCategory === c.id ? 'bg-orange-50 text-orange-600 font-bold' : 'hover:bg-gray-50 text-gray-700 hover:text-orange-500'}`}
                     >
                       {c.name}
@@ -78,7 +78,6 @@ function Home() {
               </ul>
             </div>
 
-            {/* ទំនិញពេញនិយម (បញ្ឈរ) */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hidden lg:block">
                <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">ទំនិញពេញនិយម</h3>
                <div className="flex flex-col gap-4">
@@ -98,7 +97,6 @@ function Home() {
           {/* ================= ២. ផ្ទាំងកណ្តាល ================= */}
           <div className="w-full lg:w-2/4 flex flex-col gap-6">
             
-            {/* Main Banner */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-[250px] md:h-[300px] flex items-center justify-center relative overflow-hidden">
               {banners.mainImage ? (
                 <img src={banners.mainImage} alt="Main Promo" className="w-full h-full object-cover rounded-lg" />
@@ -116,13 +114,11 @@ function Home() {
               )}
             </div>
 
-            {/* Promo Bar */}
             <div className="bg-orange-400 rounded-xl px-4 md:px-6 py-3 flex justify-between items-center text-white shadow-sm">
               <span className="font-bold text-sm md:text-base">ការផ្តល់ជូនពិសេសសម្រាប់ទំនិញថ្មីៗ</span>
               <button className="bg-white text-orange-500 px-3 md:px-4 py-1.5 rounded-md font-bold text-xs md:text-sm whitespace-nowrap ml-2">ស្វែងយល់បន្ថែម</button>
             </div>
 
-            {/* បញ្ជីទំនិញកណ្តាល */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex-grow">
                <div className="flex justify-between items-center mb-6 border-b pb-2">
                  <h3 className="font-bold text-gray-800">
@@ -157,7 +153,6 @@ function Home() {
           {/* ================= ៣. ផ្នែកខាងស្តាំ ================= */}
           <div className="w-full lg:w-1/4 flex flex-col gap-6">
             
-            {/* Features List */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hidden md:block">
               <ul className="flex flex-col gap-5 text-sm text-gray-700">
                 <li className="flex items-start gap-3">
@@ -183,7 +178,6 @@ function Home() {
               </ul>
             </div>
 
-            {/* About Us / Shop Image */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
                <h3 className="font-bold text-gray-800 border-b pb-2 text-sm md:text-base">អំពីយើង (About Us)</h3>
                <div className="bg-gray-400 rounded-lg overflow-hidden relative flex items-center justify-center h-24 md:h-32">
