@@ -8,44 +8,45 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch('https://v-cart-backend.onrender.com/api/login', {
+      // ប្រើប្រាស់ Render URL ផ្ទាល់ មិនមែន localhost ទេ
+      const res = await fetch('https://v-cart-backend.onrender.com/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
       
-      const data = await response.json();
+      const data = await res.json();
       
       if (data.success) {
-        // រក្សាទុក Token ក្នុងកុំព្យូទ័រ
         localStorage.setItem('adminToken', data.token);
-        navigate('/admin'); // បញ្ជូនទៅកាន់ទំព័រ Admin
+        navigate('/admin');
       } else {
-        alert(data.message || 'ឈ្មោះគណនី ឬលេខសម្ងាត់មិនត្រឹមត្រូវ');
+        alert(data.message || 'ព័ត៌មានមិនត្រឹមត្រូវទេ');
       }
-    } catch (error) {
-      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+    } catch (err) {
+      console.error(err);
+      alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server (សូមពិនិត្យមើល URL របស់ Backend)');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <div className="text-center mb-8">
-          <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
-            <Lock size={32} />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 w-full max-w-md">
+        <div className="flex flex-col items-center mb-8">
+          <div className="bg-blue-50 p-4 rounded-full mb-4">
+            <Lock size={32} className="text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">គ្រប់គ្រងប្រព័ន្ធ Admin</h2>
-          <p className="text-gray-500 mt-2">សូមបញ្ចូលព័ត៌មានគណនីរបស់អ្នក</p>
+          <h2 className="text-2xl font-black text-gray-800">គ្រប់គ្រងប្រព័ន្ធ Admin</h2>
+          <p className="text-gray-500 text-sm mt-1">សូមបញ្ចូលព័ត៌មានគណនីរបស់អ្នក</p>
         </div>
-
-        <form onSubmit={handleLogin} className="space-y-5">
+        
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះគណនី (Username)</label>
             <input 
@@ -53,8 +54,7 @@ function Login() {
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
-              className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-              placeholder="វាយបញ្ចូល username..." 
+              className="w-full border px-4 py-3 rounded-lg outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition"
             />
           </div>
           <div>
@@ -64,16 +64,11 @@ function Login() {
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
-              className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-              placeholder="••••••••" 
+              className="w-full border px-4 py-3 rounded-lg outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition"
             />
           </div>
-          <button 
-            disabled={isLoading} 
-            type="submit" 
-            className={`w-full text-white font-bold py-3.5 rounded-xl transition ${isLoading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
-          >
-            {isLoading ? 'កំពុងពិនិត្យ...' : 'ចូលគណនី (Login)'}
+          <button type="submit" disabled={isLoading} className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-lg transition mt-2 disabled:bg-gray-400">
+            {isLoading ? 'កំពុងពិនិត្យ...' : 'ចូលប្រព័ន្ធ (Login)'}
           </button>
         </form>
       </div>
