@@ -256,20 +256,25 @@ app.post('/api/orders', async (req, res) => {
       return res.status(400).json({ success: false, message: 'មិនមានទំនិញក្នុងកន្ត្រកទេ' });
     }
 
+    // ១. ឆែកមើលចំនួនស្តុក
     for (let item of items) {
       const product = await Product.findById(item.id || item._id);
       if (!product) return res.status(404).json({ success: false, message: `រកមិនឃើញទំនិញ ${item.name}` });
-      if (product.countInStock < item.quantity) {
+      
+      // ប្រើ stock ជំនួស countInStock
+      if (product.stock < (item.quantity || 1)) {
         return res.status(400).json({ 
           success: false, 
-          message: `សុំទោស! ទំនិញ "${item.name}" សល់ត្រឹមតែ ${product.countInStock} ប៉ុណ្ណោះ ក្នុងស្តុក។` 
+          message: `សុំទោស! ទំនិញ "${item.name}" សល់ត្រឹមតែ ${product.stock} ប៉ុណ្ណោះ ក្នុងស្តុក។` 
         });
       }
     }
 
+    // ២. កាត់ស្តុកចេញពី Database
     for (let item of items) {
       const product = await Product.findById(item.id || item._id);
-      product.countInStock -= (item.quantity || 1);
+      // ប្រើ stock ជំនួស countInStock
+      product.stock -= (item.quantity || 1);
       await product.save();
     }
 
@@ -278,7 +283,7 @@ app.post('/api/orders', async (req, res) => {
     res.json({ success: true, message: 'បញ្ជាទិញជោគជ័យ!' });
   } catch (error) {
     console.error('Order Error:', error);
-    res.status(500).json({ success: false, message: 'មានបញ្ហាទិន្នន័យ', error: error.message });
+    res.status(500).json({ success: false, message: 'បរាជ័យក្នុងការបញ្ជាទិញ', error: error.message });
   }
 });
 
