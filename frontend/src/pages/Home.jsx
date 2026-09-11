@@ -7,9 +7,10 @@ function Home() {
   const [banners, setBanners] = useState({ mainImage: '', sideImage: '' });
   const [loading, setLoading] = useState(true);
   
-  // +++ ចំណុចដែលបានកែប្រែ៖ ប្រើប្រាស់ URL ជាគោល ដើម្បីឱ្យម៉ឺនុយលើ និងឆ្វេងដើរស្របគ្នា +++
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get('category') || 'all';
+  // +++ ចាប់យកពាក្យដែលគេស្វែងរកពី URL +++
+  const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
     fetchProducts();
@@ -47,29 +48,28 @@ function Home() {
     { id: 'general', name: 'ទូទៅ (General)' }
   ];
 
-  const displayedProducts = selectedCategory === 'all' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  // +++ ចម្រាញ់ទំនិញទាំងតាមប្រភេទ និង តាមពាក្យស្វែងរក +++
+  const displayedProducts = products.filter(p => {
+    const matchCategory = selectedCategory === 'all' || p.category === selectedCategory;
+    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCategory && matchSearch;
+  });
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
       <div className="container mx-auto px-4 pt-6 pb-10">
         <div className="flex flex-col lg:flex-row gap-6">
           
-          {/* ================= ១. ផ្នែកខាងឆ្វេង ================= */}
+          {/* ផ្នែកខាងឆ្វេង */}
           <div className="w-full lg:w-1/4 flex flex-col gap-6">
-            
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="bg-orange-500 text-white font-bold px-5 py-3">
-                ≡ ជម្រើសទំនិញ
-              </div>
+              <div className="bg-orange-500 text-white font-bold px-5 py-3">≡ ជម្រើសទំនិញ</div>
               <ul className="flex flex-col">
                 {categories.map(c => (
                   <li key={c.id} className="border-b border-gray-50 last:border-0">
                     <button 
-                      // +++ កែប្រែនៅទីនេះ៖ ឱ្យប៊ូតុងខាងឆ្វេងបញ្ជូនទិន្នន័យទៅ URL ដែរ +++
                       onClick={() => setSearchParams(c.id === 'all' ? {} : { category: c.id })}
-                      className={`w-full text-left px-5 py-3 transition ${selectedCategory === c.id ? 'bg-orange-50 text-orange-600 font-bold' : 'hover:bg-gray-50 text-gray-700 hover:text-orange-500'}`}
+                      className={`w-full text-left px-5 py-3 transition ${selectedCategory === c.id && !searchQuery ? 'bg-orange-50 text-orange-600 font-bold' : 'hover:bg-gray-50 text-gray-700 hover:text-orange-500'}`}
                     >
                       {c.name}
                     </button>
@@ -94,9 +94,8 @@ function Home() {
             </div>
           </div>
 
-          {/* ================= ២. ផ្ទាំងកណ្តាល ================= */}
+          {/* ផ្ទាំងកណ្តាល */}
           <div className="w-full lg:w-2/4 flex flex-col gap-6">
-            
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-[250px] md:h-[300px] flex items-center justify-center relative overflow-hidden">
               {banners.mainImage ? (
                 <img src={banners.mainImage} alt="Main Promo" className="w-full h-full object-cover rounded-lg" />
@@ -122,7 +121,8 @@ function Home() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex-grow">
                <div className="flex justify-between items-center mb-6 border-b pb-2">
                  <h3 className="font-bold text-gray-800">
-                   {selectedCategory === 'all' ? 'ទំនិញកំពុងពេញនិយម' : 'លទ្ធផលស្វែងរក'}
+                   {/* +++ បង្ហាញចំណងជើងទៅតាមលទ្ធផលស្វែងរក +++ */}
+                   {searchQuery ? `លទ្ធផលស្វែងរក: "${searchQuery}"` : (selectedCategory === 'all' ? 'ទំនិញកំពុងពេញនិយម' : 'លទ្ធផលស្វែងរក')}
                  </h3>
                  <span className="text-xs text-gray-500 cursor-pointer hover:text-orange-500 font-bold">មើលទាំងអស់ →</span>
                </div>
@@ -130,16 +130,14 @@ function Home() {
                {loading ? (
                  <div className="text-center py-10 text-gray-500">កំពុងទាញយក...</div>
                ) : displayedProducts.length === 0 ? (
-                 <div className="text-center py-10 text-gray-500">មិនមានទំនិញក្នុងប្រភេទនេះទេ</div>
+                 <div className="text-center py-10 text-gray-500">មិនមានទំនិញដែលអ្នកស្វែងរកទេ</div>
                ) : (
                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                    {displayedProducts.map(product => (
                       <Link key={product._id} to={`/product/${product._id}`} className="group flex flex-col">
                         <div className="bg-gray-50 rounded-xl aspect-square overflow-hidden mb-3 relative flex items-center justify-center p-2 border border-gray-100 group-hover:border-orange-200 transition">
                           <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-300" />
-                          {product.stock <= 0 && (
-                            <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">អស់ស្តុក</div>
-                          )}
+                          {product.stock <= 0 && <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">អស់ស្តុក</div>}
                         </div>
                         <h3 className="font-bold text-gray-800 text-xs md:text-sm mb-1 group-hover:text-blue-600 transition line-clamp-2">{product.name}</h3>
                         <div className="text-orange-500 font-black text-sm md:text-base">${product.price.toFixed(2)}</div>
@@ -150,46 +148,24 @@ function Home() {
             </div>
           </div>
 
-          {/* ================= ៣. ផ្នែកខាងស្តាំ ================= */}
+          {/* ផ្នែកខាងស្តាំ */}
           <div className="w-full lg:w-1/4 flex flex-col gap-6">
-            
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hidden md:block">
               <ul className="flex flex-col gap-5 text-sm text-gray-700">
-                <li className="flex items-start gap-3">
-                  <ShieldCheck className="text-orange-500 mt-0.5" size={20} />
-                  <div><strong className="block text-gray-800 text-xs md:text-sm">ទំនិញធានាសុទ្ធ</strong><span className="text-[10px] md:text-xs text-gray-500">គុណភាពខ្ពស់ 100%</span></div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <ShieldCheck className="text-orange-500 mt-0.5" size={20} />
-                  <div><strong className="block text-gray-800 text-xs md:text-sm">សុវត្ថិភាព 100%</strong><span className="text-[10px] md:text-xs text-gray-500">ការទូទាត់មានសុវត្ថិភាព</span></div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Clock className="text-orange-500 mt-0.5" size={20} />
-                  <div><strong className="block text-gray-800 text-xs md:text-sm">សេវាកម្ម 24/7</strong><span className="text-[10px] md:text-xs text-gray-500">ជួយដោះស្រាយរាល់បញ្ហា</span></div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Gift className="text-orange-500 mt-0.5" size={20} />
-                  <div><strong className="block text-gray-800 text-xs md:text-sm">ការផ្តល់ជូនពិសេស</strong><span className="text-[10px] md:text-xs text-gray-500">មានប្រូម៉ូសិនរាល់សប្តាហ៍</span></div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Truck className="text-orange-500 mt-0.5" size={20} />
-                  <div><strong className="block text-gray-800 text-xs md:text-sm">ដឹកជញ្ជូនរហ័ស</strong><span className="text-[10px] md:text-xs text-gray-500">សេវាដឹកជញ្ជូនទូទាំងប្រទេស</span></div>
-                </li>
+                <li className="flex items-start gap-3"><ShieldCheck className="text-orange-500 mt-0.5" size={20} /><div><strong className="block text-gray-800 text-xs md:text-sm">ទំនិញធានាសុទ្ធ</strong><span className="text-[10px] md:text-xs text-gray-500">គុណភាពខ្ពស់ 100%</span></div></li>
+                <li className="flex items-start gap-3"><ShieldCheck className="text-orange-500 mt-0.5" size={20} /><div><strong className="block text-gray-800 text-xs md:text-sm">សុវត្ថិភាព 100%</strong><span className="text-[10px] md:text-xs text-gray-500">ការទូទាត់មានសុវត្ថិភាព</span></div></li>
+                <li className="flex items-start gap-3"><Clock className="text-orange-500 mt-0.5" size={20} /><div><strong className="block text-gray-800 text-xs md:text-sm">សេវាកម្ម 24/7</strong><span className="text-[10px] md:text-xs text-gray-500">ជួយដោះស្រាយរាល់បញ្ហា</span></div></li>
+                <li className="flex items-start gap-3"><Gift className="text-orange-500 mt-0.5" size={20} /><div><strong className="block text-gray-800 text-xs md:text-sm">ការផ្តល់ជូនពិសេស</strong><span className="text-[10px] md:text-xs text-gray-500">មានប្រូម៉ូសិនរាល់សប្តាហ៍</span></div></li>
+                <li className="flex items-start gap-3"><Truck className="text-orange-500 mt-0.5" size={20} /><div><strong className="block text-gray-800 text-xs md:text-sm">ដឹកជញ្ជូនរហ័ស</strong><span className="text-[10px] md:text-xs text-gray-500">សេវាដឹកជញ្ជូនទូទាំងប្រទេស</span></div></li>
               </ul>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
                <h3 className="font-bold text-gray-800 border-b pb-2 text-sm md:text-base">អំពីយើង (About Us)</h3>
                <div className="bg-gray-400 rounded-lg overflow-hidden relative flex items-center justify-center h-24 md:h-32">
-                 {banners.sideImage ? (
-                   <img src={banners.sideImage} alt="Shop Side" className="w-full h-full object-cover" />
-                 ) : (
-                   <span className="text-white font-bold text-base md:text-lg">Shop Image</span>
-                 )}
+                 {banners.sideImage ? <img src={banners.sideImage} alt="Shop Side" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-base md:text-lg">Shop Image</span>}
                </div>
-               <p className="text-[10px] md:text-xs text-gray-500 text-center mt-2 leading-relaxed">
-                 យើងផ្តល់ជូននូវផលិតផលដែលមានគុណភាពខ្ពស់ និងសេវាកម្មដ៏ល្អឥតខ្ចោះដល់អតិថិជនគ្រប់រូប។
-               </p>
+               <p className="text-[10px] md:text-xs text-gray-500 text-center mt-2 leading-relaxed">យើងផ្តល់ជូននូវផលិតផលដែលមានគុណភាពខ្ពស់ និងសេវាកម្មដ៏ល្អឥតខ្ចោះដល់អតិថិជនគ្រប់រូប។</p>
             </div>
           </div>
 
