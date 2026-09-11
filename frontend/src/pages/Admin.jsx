@@ -174,7 +174,21 @@ function Admin() {
                 </div>
                 <div><label className="block text-sm font-medium mb-1">ពណ៌ (ក្បៀសពីគ្នា)</label><input type="text" name="colors" value={formData.colors} onChange={handleInputChange} className="w-full border px-3 py-2 rounded-lg" /></div>
                 {(formData.category === 'clothing' || formData.category === 'shoes') && <div className="p-3 bg-blue-50 rounded-lg"><label className="block text-sm font-bold text-blue-800 mb-1">ទំហំ (ក្បៀសពីគ្នា)</label><input type="text" name="sizes" value={formData.sizes} onChange={handleInputChange} className="w-full border border-blue-200 px-3 py-2 rounded-lg" /></div>}
-                {(formData.category === 'electronics') && <div className="p-3 bg-orange-50 rounded-lg"><label className="block text-sm font-bold text-orange-800 mb-1">ទំហំផ្ទុក (ក្បៀសពីគ្នា)</label><input type="text" name="storage" value={formData.storage} onChange={handleInputChange} className="w-full border border-orange-200 px-3 py-2 rounded-lg" /></div>}
+                {(formData.category === 'electronics') && (
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
+                    <label className="block text-sm font-bold text-orange-800 mb-1">
+                      ទំហំផ្ទុក & តម្លៃថែម (ឧ. 128GB, 256GB:150, 1TB:450)
+                    </label>
+                    <input 
+                      type="text" 
+                      name="storage" 
+                      value={formData.storage} 
+                      onChange={handleInputChange} 
+                      placeholder="128GB, 256GB:150, 1TB:450" 
+                      className="w-full border border-orange-200 px-3 py-2 rounded-lg outline-none focus:border-orange-500 text-sm" 
+                    />
+                  </div>
+                )}
                 <div><label className="block text-sm font-medium mb-1">ការពិពណ៌នា</label><textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className="w-full border px-3 py-2 rounded-lg"></textarea></div>
                 <button type="submit" disabled={uploading} className={`w-full text-white font-bold py-3 rounded-lg ${uploading ? 'bg-gray-400' : (editingId ? 'bg-orange-500' : 'bg-blue-600')}`}><Save size={18} className="inline" /> {editingId ? 'រក្សាទុក' : 'បន្ថែមថ្មី'}</button>
               </form>

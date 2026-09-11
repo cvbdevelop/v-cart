@@ -14,8 +14,19 @@ function ProductDetail() {
   
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
-  const [selectedStorage, setSelectedStorage] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  
+  // State សម្រាប់ផ្ទុកទំហំ និងតម្លៃថែមដែលកាត់ចេញពីកូដ
+  const [selectedStorageObj, setSelectedStorageObj] = useState({ label: '', priceBump: 0, raw: '' });
+
+  // មុខងារកាត់ផ្តាច់ពាក្យ (ឧ. "256GB:150" កាត់បាន "256GB" និង "150")
+  const parseStorageItem = (stString) => {
+    if (!stString) return { label: '', priceBump: 0, raw: '' };
+    const parts = stString.split(':');
+    const label = parts[0].trim();
+    const priceBump = parts.length > 1 ? Number(parts[1].trim()) : 0;
+    return { label, priceBump, raw: stString };
+  };
 
   useEffect(() => {
     fetch(`https://v-cart-backend.onrender.com/api/products/${id}`)
@@ -24,8 +35,11 @@ function ProductDetail() {
         setProduct(data);
         setSelectedImage(data.image);
         if (data.colors?.length > 0) setSelectedColor(data.colors[0]);
-        if (data.storage?.length > 0) setSelectedStorage(data.storage[0]);
         if (data.sizes?.length > 0) setSelectedSize(data.sizes[0]);
+        // កំណត់ទំហំផ្ទុកលំនាំដើម
+        if (data.storage?.length > 0) {
+          setSelectedStorageObj(parseStorageItem(data.storage[0]));
+        }
         setLoading(false);
       })
       .catch(err => { console.error(err); setLoading(false); });
@@ -36,23 +50,15 @@ function ProductDetail() {
 
   const allImages = [product.image, ...(product.images || [])].filter(Boolean);
 
-  // +++ ការគណនាតម្លៃផ្អែកលើទំហំផ្ទុក (Dynamic Pricing) +++
-  let currentPrice = product.price;
-  if (selectedStorage && product.storage) {
-    const storageIndex = product.storage.indexOf(selectedStorage);
-    if (storageIndex > 0) {
-      // កំណត់តម្លៃបន្ថែមសម្រាប់រាល់ការឡើងទំហំមួយកម្រិត (ឧ. ទី២ ថែម $150, ទី៣ ថែម $300)
-      // លោកអ្នកអាចដូរលេខ 150 នេះទៅជាចំនួនលុយដែលចង់បាន
-      currentPrice = product.price + (storageIndex * 150); 
-    }
-  }
+  // គណនាតម្លៃសរុប (តម្លៃដើម + តម្លៃថែមពីទំហំផ្ទុក)
+  const currentPrice = product.price + (selectedStorageObj ? selectedStorageObj.priceBump : 0);
 
   const handleAddToCart = () => {
     addToCart({
       ...product,
-      price: currentPrice, // បញ្ជូនតម្លៃថ្មីទៅកាន់កន្ត្រកទំនិញ
+      price: currentPrice, // បញ្ជូនតម្លៃថ្មីទៅកាន់កន្ត្រក
       selectedColor,
-      selectedStorage,
+      selectedStorage: selectedStorageObj.label, // បញ្ជូនតែឈ្មោះទំហំ (ឧ. 256GB) ទៅបានហើយ
       selectedSize
     });
     alert('បានបន្ថែមចូលកន្ត្រកជោគជ័យ!');
@@ -67,7 +73,7 @@ function ProductDetail() {
 
         <div className="flex flex-col md:flex-row gap-12">
           
-          {/* ផ្នែករូបភាពខាងឆ្វេង */}
+          {/* ផ្នែករូបភាព */}
           <div className="w-full md:w-1/2 flex flex-col gap-4">
             <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 flex items-center justify-center aspect-square shadow-inner">
               <img src={selectedImage} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
@@ -83,7 +89,7 @@ function ProductDetail() {
             )}
           </div>
 
-          {/* ផ្នែកព័ត៌មាន និងការជ្រើសរើសខាងស្តាំ */}
+          {/* ផ្នែកព័ត៌មាន និងការជ្រើសរើស */}
           <div className="w-full md:w-1/2 flex flex-col">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{product.category}</div>
             <h1 className="text-2xl font-black text-gray-800 mb-3 leading-tight">{product.name}</h1>
@@ -109,22 +115,24 @@ function ProductDetail() {
               </div>
             )}
 
-            {/* ជម្រើសទំហំផ្ទុក */}
+            {/* ជម្រើសទំហំផ្ទុក (Dynamic Pricing) */}
             {product.storage && product.storage.length > 0 && (
               <div className="mb-6">
-                <div className="text-sm font-bold text-gray-800 mb-3">ទំហំផ្ទុក (Storage): <span className="text-gray-500 font-normal ml-1">{selectedStorage}</span></div>
+                <div className="text-sm font-bold text-gray-800 mb-3">ទំហំផ្ទុក (Storage): <span className="text-gray-500 font-normal ml-1">{selectedStorageObj.label}</span></div>
                 <div className="flex flex-wrap gap-3">
-                  {product.storage.map((st, index) => {
-                    const priceBump = index * 200;
+                  {product.storage.map((st) => {
+                    const parsed = parseStorageItem(st);
+                    const isSelected = selectedStorageObj.raw === st;
+                    
                     return (
                       <button 
                         key={st} 
-                        onClick={() => setSelectedStorage(st)} 
-                        className={`px-5 py-2.5 rounded-lg text-sm font-bold border-2 flex items-center gap-2 transition ${selectedStorage === st ? 'border-orange-500 text-orange-600 bg-orange-50 shadow-sm' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
+                        onClick={() => setSelectedStorageObj(parsed)} 
+                        className={`px-5 py-2.5 rounded-lg text-sm font-bold border-2 flex items-center gap-2 transition ${isSelected ? 'border-orange-500 text-orange-600 bg-orange-50 shadow-sm' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
                       >
-                        {selectedStorage === st && <Check size={16} />} {st}
-                        {/* បង្ហាញតម្រុយតម្លៃថែម (+$200) */}
-                        {priceBump > 0 && <span className={`text-[11px] ml-1 ${selectedStorage === st ? 'text-orange-500' : 'text-gray-400'}`}>(+${priceBump})</span>}
+                        {isSelected && <Check size={16} />} {parsed.label}
+                        {/* បង្ហាញលេខលុយដែលថែម បើធំជាង 0 */}
+                        {parsed.priceBump > 0 && <span className={`text-[11px] ml-1 ${isSelected ? 'text-orange-500' : 'text-gray-400'}`}>(+${parsed.priceBump})</span>}
                       </button>
                     );
                   })}
