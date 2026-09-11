@@ -19,7 +19,7 @@ function Contact() {
               <div className="bg-orange-500 p-3 rounded-full"><Phone size={20} /></div>
               <div>
                 <p className="text-xs text-gray-400 uppercase">ទូរស័ព្ទ (Phone)</p>
-                <p className="font-bold">+855 12 345 678</p>
+                <p className="font-bold">+855 96 924 3333</p>
               </div>
             </div>
             
