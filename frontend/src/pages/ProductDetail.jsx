@@ -15,11 +15,8 @@ function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
-  
-  // State សម្រាប់ផ្ទុកទំហំ និងតម្លៃថែមដែលកាត់ចេញពីកូដ
   const [selectedStorageObj, setSelectedStorageObj] = useState({ label: '', priceBump: 0, raw: '' });
 
-  // មុខងារកាត់ផ្តាច់ពាក្យ (ឧ. "256GB:150" កាត់បាន "256GB" និង "150")
   const parseStorageItem = (stString) => {
     if (!stString) return { label: '', priceBump: 0, raw: '' };
     const parts = stString.split(':');
@@ -36,7 +33,6 @@ function ProductDetail() {
         setSelectedImage(data.image);
         if (data.colors?.length > 0) setSelectedColor(data.colors[0]);
         if (data.sizes?.length > 0) setSelectedSize(data.sizes[0]);
-        // កំណត់ទំហំផ្ទុកលំនាំដើម
         if (data.storage?.length > 0) {
           setSelectedStorageObj(parseStorageItem(data.storage[0]));
         }
@@ -50,16 +46,28 @@ function ProductDetail() {
 
   const allImages = [product.image, ...(product.images || [])].filter(Boolean);
 
-  // គណនាតម្លៃសរុប (តម្លៃដើម + តម្លៃថែមពីទំហំផ្ទុក)
+  // +++ មុខងារផ្លាស់ប្តូររូបភាពទៅតាមពណ៌ដែលបានរើស +++
+  const handleColorSelect = (color) => {
+    setSelectedColor(color);
+    if (product.colors && product.colors.length > 0) {
+      const colorIndex = product.colors.indexOf(color); // រកមើលថាពណ៌នេះនៅលេខរៀងទីប៉ុន្មាន
+      // បើរូបភាពនៅលេខរៀងនោះមានពិតប្រាកដ ឱ្យវាបង្ហាញរូបនោះ
+      if (colorIndex !== -1 && allImages[colorIndex]) {
+        setSelectedImage(allImages[colorIndex]);
+      }
+    }
+  };
+
   const currentPrice = product.price + (selectedStorageObj ? selectedStorageObj.priceBump : 0);
 
   const handleAddToCart = () => {
     addToCart({
       ...product,
-      price: currentPrice, // បញ្ជូនតម្លៃថ្មីទៅកាន់កន្ត្រក
+      price: currentPrice,
       selectedColor,
-      selectedStorage: selectedStorageObj.label, // បញ្ជូនតែឈ្មោះទំហំ (ឧ. 256GB) ទៅបានហើយ
-      selectedSize
+      selectedStorage: selectedStorageObj.label,
+      selectedSize,
+      image: selectedImage // យកលោករូបភាពពណ៌ដែលកំពុងរើសចូលទៅក្នុងកន្ត្រក
     });
     alert('បានបន្ថែមចូលកន្ត្រកជោគជ័យ!');
   };
@@ -76,7 +84,7 @@ function ProductDetail() {
           {/* ផ្នែករូបភាព */}
           <div className="w-full md:w-1/2 flex flex-col gap-4">
             <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 flex items-center justify-center aspect-square shadow-inner">
-              <img src={selectedImage} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
+              <img src={selectedImage} alt={product.name} className="w-full h-full object-contain mix-blend-multiply transition-opacity duration-300" />
             </div>
             {allImages.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -94,7 +102,6 @@ function ProductDetail() {
             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{product.category}</div>
             <h1 className="text-2xl font-black text-gray-800 mb-3 leading-tight">{product.name}</h1>
             
-            {/* បង្ហាញតម្លៃដែលបានគណនារួច */}
             <div className="text-3xl font-black text-[#0b1f38] mb-6">${currentPrice.toFixed(2)}</div>
 
             <p className="text-sm text-gray-500 mb-8 leading-relaxed whitespace-pre-line">
@@ -107,7 +114,11 @@ function ProductDetail() {
                 <div className="text-sm font-bold text-gray-800 mb-3">ពណ៌ (Color): <span className="text-gray-500 font-normal ml-1">{selectedColor}</span></div>
                 <div className="flex flex-wrap gap-3">
                   {product.colors.map(color => (
-                    <button key={color} onClick={() => setSelectedColor(color)} className={`px-5 py-2.5 rounded-lg text-sm font-bold border-2 flex items-center gap-2 transition ${selectedColor === color ? 'border-orange-500 text-orange-600 bg-orange-50 shadow-sm' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}>
+                    <button 
+                      key={color} 
+                      onClick={() => handleColorSelect(color)} 
+                      className={`px-5 py-2.5 rounded-lg text-sm font-bold border-2 flex items-center gap-2 transition ${selectedColor === color ? 'border-orange-500 text-orange-600 bg-orange-50 shadow-sm' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
+                    >
                       {selectedColor === color && <Check size={16} />} {color}
                     </button>
                   ))}
@@ -115,7 +126,7 @@ function ProductDetail() {
               </div>
             )}
 
-            {/* ជម្រើសទំហំផ្ទុក (Dynamic Pricing) */}
+            {/* ជម្រើសទំហំផ្ទុក */}
             {product.storage && product.storage.length > 0 && (
               <div className="mb-6">
                 <div className="text-sm font-bold text-gray-800 mb-3">ទំហំផ្ទុក (Storage): <span className="text-gray-500 font-normal ml-1">{selectedStorageObj.label}</span></div>
@@ -123,7 +134,6 @@ function ProductDetail() {
                   {product.storage.map((st) => {
                     const parsed = parseStorageItem(st);
                     const isSelected = selectedStorageObj.raw === st;
-                    
                     return (
                       <button 
                         key={st} 
@@ -131,7 +141,6 @@ function ProductDetail() {
                         className={`px-5 py-2.5 rounded-lg text-sm font-bold border-2 flex items-center gap-2 transition ${isSelected ? 'border-orange-500 text-orange-600 bg-orange-50 shadow-sm' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
                       >
                         {isSelected && <Check size={16} />} {parsed.label}
-                        {/* បង្ហាញលេខលុយដែលថែម បើធំជាង 0 */}
                         {parsed.priceBump > 0 && <span className={`text-[11px] ml-1 ${isSelected ? 'text-orange-500' : 'text-gray-400'}`}>(+${parsed.priceBump})</span>}
                       </button>
                     );
@@ -140,7 +149,7 @@ function ProductDetail() {
               </div>
             )}
 
-            {/* ជម្រើសទំហំទូទៅ (Sizes) */}
+            {/* ជម្រើសទំហំទូទៅ */}
             {product.sizes && product.sizes.length > 0 && (
               <div className="mb-6">
                 <div className="text-sm font-bold text-gray-800 mb-3">ទំហំ (Size): <span className="text-gray-500 font-normal ml-1">{selectedSize}</span></div>
