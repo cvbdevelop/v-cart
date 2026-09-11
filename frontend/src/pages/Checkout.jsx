@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../contexts/CartContext';
+import { QrCode, ShieldCheck } from 'lucide-react';
 
 function Checkout() {
   const cartContext = useContext(CartContext) || {};
@@ -12,7 +13,7 @@ function Checkout() {
     customerName: '',
     phone: '',
     address: '',
-    paymentMethod: 'Cash on Delivery'
+    paymentMethod: 'Cash on Delivery' // លំនាំដើម
   });
 
   const [couponCode, setCouponCode] = useState('');
@@ -102,6 +103,7 @@ function Checkout() {
 
         <div className="flex flex-col md:flex-row gap-8">
           
+          {/* ================= ផ្នែកខាងឆ្វេង៖ ព័ត៌មានអ្នកទទួល ================= */}
           <div className="w-full md:w-1/2">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-3">ព័ត៌មានអ្នកទទួល</h3>
@@ -118,20 +120,53 @@ function Checkout() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">អាសយដ្ឋានដឹកជញ្ជូន</label>
                   <textarea required name="address" value={formData.address} onChange={handleInputChange} rows="3" placeholder="ផ្ទះលេខ ផ្លូវ សង្កាត់ ខណ្ឌ..." className="w-full border px-4 py-2.5 rounded-lg outline-none focus:border-blue-500 text-sm bg-gray-50 focus:bg-white"></textarea>
                 </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">វិធីទូទាត់ប្រាក់</label>
-                  <select name="paymentMethod" value={formData.paymentMethod} onChange={handleInputChange} className="w-full border px-4 py-2.5 rounded-lg outline-none focus:border-blue-500 text-sm bg-gray-50">
+                  <select name="paymentMethod" value={formData.paymentMethod} onChange={handleInputChange} className="w-full border px-4 py-2.5 rounded-lg outline-none focus:border-blue-500 text-sm font-bold text-gray-700 bg-gray-50">
                     <option value="Cash on Delivery">ទូទាត់ពេលទទួលបានទំនិញ (Cash on Delivery)</option>
-                    <option value="ABA Pay">ABA Pay (វេរប្រាក់)</option>
+                    <option value="Acleda Pay">ទូទាត់តាមអេស៊ីលីដា (Acleda Pay)</option>
                   </select>
                 </div>
-                <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition shadow-md mt-4 disabled:bg-gray-400">
-                  {isSubmitting ? 'កំពុងដំណើរការ...' : 'បញ្ជាក់ការបញ្ជាទិញ'}
+
+                {/* +++ ផ្នែកបង្ហាញ QR Code ពេលជ្រើសរើស Acleda Pay +++ */}
+                {formData.paymentMethod === 'Acleda Pay' && (
+                  <div className="mt-2 p-5 bg-[#00529c]/5 border border-[#00529c]/20 rounded-xl text-center flex flex-col items-center">
+                    <div className="bg-[#00529c] text-white px-4 py-1.5 rounded-full text-xs font-bold mb-4 flex items-center gap-2">
+                      <ShieldCheck size={16} /> ធានាសុវត្ថិភាពទូទាត់ ១០០%
+                    </div>
+                    
+                    <h4 className="font-black text-[#00529c] mb-1">ស្កេនដើម្បីទូទាត់ប្រាក់</h4>
+                    <p className="text-xs text-gray-500 mb-4">សូមប្រើប្រាស់កម្មវិធី Acleda Mobile ដើម្បីស្កេន</p>
+                    
+                    {/* រូបភាព QR Code - លោកអ្នកអាចដូរ URL រូបភាពពិតប្រាកដនៅទីនេះ */}
+                    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 mb-3 relative">
+                      <QrCode className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-100/50" size={150} />
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=AcledaPay_${finalTotal}`} 
+                        alt="Acleda QR Code" 
+                        className="w-40 h-40 object-contain relative z-10" 
+                      />
+                    </div>
+                    
+                    <div className="text-sm text-gray-600">
+                      ទឹកប្រាក់ត្រូវបង់៖ <span className="font-black text-[#00529c] text-lg">${finalTotal.toFixed(2)}</span>
+                    </div>
+                    <p className="text-[11px] text-orange-500 mt-2 font-medium">
+                      *សូមចុច "បញ្ជាក់ការបញ្ជាទិញ" បន្ទាប់ពីលោកអ្នកបានធ្វើការវេរប្រាក់រួចរាល់។
+                    </p>
+                  </div>
+                )}
+                {/* ++++++++++++++++++++++++++++++++++++++++++++++ */}
+
+                <button type="submit" disabled={isSubmitting} className={`w-full text-white font-bold py-3.5 rounded-lg transition shadow-md mt-4 ${formData.paymentMethod === 'Acleda Pay' ? 'bg-[#00529c] hover:bg-[#003d75]' : 'bg-blue-600 hover:bg-blue-700'} disabled:bg-gray-400`}>
+                  {isSubmitting ? 'កំពុងដំណើរការ...' : (formData.paymentMethod === 'Acleda Pay' ? 'បញ្ជាក់ថាបានទូទាត់រួចរាល់' : 'បញ្ជាក់ការបញ្ជាទិញ')}
                 </button>
               </form>
             </div>
           </div>
 
+          {/* ================= ផ្នែកខាងស្តាំ៖ សង្ខេបការបញ្ជាទិញ ================= */}
           <div className="w-full md:w-1/2">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
               <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-3">សង្ខេបការបញ្ជាទិញ ({totalItems} ទំនិញ)</h3>
@@ -174,7 +209,6 @@ function Checkout() {
                   <span>${subTotal.toFixed(2)}</span>
                 </div>
                 
-                {/* បានកែសម្រួលសញ្ញាបិទនៅត្រង់នេះ (ពី </div> ទៅជា )} វិញ) */}
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>បញ្ចុះតម្លៃ ({discount}%)</span>
@@ -188,7 +222,7 @@ function Checkout() {
                 </div>
                 <div className="flex justify-between items-center border-t mt-2 pt-4">
                   <span className="font-bold text-gray-800 text-base">ទឹកប្រាក់ត្រូវបង់សរុប</span>
-                  <span className="text-2xl font-black text-blue-600">${finalTotal.toFixed(2)}</span>
+                  <span className="text-2xl font-black text-[#00529c]">${finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
