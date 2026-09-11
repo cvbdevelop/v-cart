@@ -162,10 +162,26 @@ function Home() {
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
                <h3 className="font-bold text-gray-800 border-b pb-2 text-sm md:text-base">អំពីយើង (About Us)</h3>
-               <div className="bg-gray-400 rounded-lg overflow-hidden relative flex items-center justify-center h-24 md:h-32">
-                 {banners.sideImage ? <img src={banners.sideImage} alt="Shop Side" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-base md:text-lg">Shop Image</span>}
+               
+               {/* +++ កែប្រែនៅទីនេះ ដើម្បីឱ្យរូបភាពបង្ហាញពេញមិនកាត់ផ្តាច់ +++ */}
+               <div className="rounded-lg overflow-hidden relative flex items-center justify-center">
+                 {banners.sideImage ? (
+                   <img 
+                     src={banners.sideImage} 
+                     alt="Shop Side" 
+                     className="w-full h-auto object-contain rounded-lg" 
+                   />
+                 ) : (
+                   <div className="w-full h-32 bg-gray-100 flex items-center justify-center rounded-lg">
+                     <span className="text-gray-400 font-bold text-base md:text-lg">Shop Image</span>
+                   </div>
+                 )}
                </div>
-               <p className="text-[10px] md:text-xs text-gray-500 text-center mt-2 leading-relaxed">យើងផ្តល់ជូននូវផលិតផលដែលមានគុណភាពខ្ពស់ និងសេវាកម្មដ៏ល្អឥតខ្ចោះដល់អតិថិជនគ្រប់រូប។</p>
+               {/* ++++++++++++++++++++++++++++++ */}
+
+               <p className="text-[10px] md:text-xs text-gray-500 text-center mt-2 leading-relaxed">
+                 យើងផ្តល់ជូននូវផលិតផលដែលមានគុណភាពខ្ពស់ និងសេវាកម្មដ៏ល្អឥតខ្ចោះដល់អតិថិជនគ្រប់រូប។
+               </p>
             </div>
           </div>
 
