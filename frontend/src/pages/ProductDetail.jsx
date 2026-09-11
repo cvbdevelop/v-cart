@@ -115,7 +115,7 @@ function ProductDetail() {
                 <div className="text-sm font-bold text-gray-800 mb-3">ទំហំផ្ទុក (Storage): <span className="text-gray-500 font-normal ml-1">{selectedStorage}</span></div>
                 <div className="flex flex-wrap gap-3">
                   {product.storage.map((st, index) => {
-                    const priceBump = index * 150;
+                    const priceBump = index * 200;
                     return (
                       <button 
                         key={st} 
@@ -123,7 +123,7 @@ function ProductDetail() {
                         className={`px-5 py-2.5 rounded-lg text-sm font-bold border-2 flex items-center gap-2 transition ${selectedStorage === st ? 'border-orange-500 text-orange-600 bg-orange-50 shadow-sm' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
                       >
                         {selectedStorage === st && <Check size={16} />} {st}
-                        {/* បង្ហាញតម្រុយតម្លៃថែម (+$150) */}
+                        {/* បង្ហាញតម្រុយតម្លៃថែម (+$200) */}
                         {priceBump > 0 && <span className={`text-[11px] ml-1 ${selectedStorage === st ? 'text-orange-500' : 'text-gray-400'}`}>(+${priceBump})</span>}
                       </button>
                     );
