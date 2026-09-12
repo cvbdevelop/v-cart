@@ -111,7 +111,7 @@ function Navbar() {
               <div className="bg-orange-500 p-1.5 rounded-full text-white"><Phone size={14} /></div>
               <div>
                 <div className="text-[10px] text-gray-400 font-medium leading-none uppercase">Call To</div>
-                <div className="text-sm font-black text-gray-800 leading-none mt-1">+855 12 345 678</div>
+                <div className="text-sm font-black text-gray-800 leading-none mt-1">+855 096 924 3333</div>
               </div>
             </div>
           </div>
